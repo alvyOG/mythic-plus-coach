@@ -1,0 +1,20 @@
+<View>
+  <Labels name="videoLabels" toName="video" allowEmpty="true">
+    <Label value="player-frame" background="#5CDBD3"/>
+    <Label value="enemy-frame" background="#096DD9"/>
+    <Label value="group-frame" background="#ADC6FF"/>
+    <Label value="player-character" background="#9254DE"/>
+    <Label value="group-character" background="#F759AB"/>
+    <Label value="action-frame" background="#D4380D"/>
+    <Label value="spell-proc" background="#FFC069"/>
+    <Label value="hazard" background="#AD8B00"/>
+  </Labels>
+   
+   <!-- Please specify FPS carefully, it will be used for all project videos -->
+   <Video name="video" value="$video" framerate="60.0" timelineHeight="300"/>
+   <VideoRectangle name="box" toName="video"/>
+</View>
+
+<!--{
+ "video": "/data/upload/2/cc9ebc4d-jak_mists_m0_v2_01.mp4"
+}-->
