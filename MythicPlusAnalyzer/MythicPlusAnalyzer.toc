@@ -3,6 +3,8 @@
 ## Notes: Tracks and analyzes Mythic Plus dungeon metrics.
 ## Version: 0.1.0
 ## Author: Alvy
-## SavedVariables: MythicPlusAnalyzerData
+## SavedVariables:
+## Dependencies:
 
-MythicPlusAnalyzer/Core.lua
+Core.lua
+Plugins/DamagePlugin.lua
