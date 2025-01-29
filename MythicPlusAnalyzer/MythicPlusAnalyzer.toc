@@ -1,0 +1,8 @@
+## Interface: 100005
+## Title: Mythic Plus Analyzer
+## Notes: Tracks and analyzes Mythic Plus dungeon metrics.
+## Version: 0.1.0
+## Author: Alvy
+## SavedVariables: MythicPlusAnalyzerData
+
+MythicPlusAnalyzer/Core.lua
