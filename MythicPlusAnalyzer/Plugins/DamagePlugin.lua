@@ -57,7 +57,7 @@ end
 function DamagePlugin:PrintDamageMetrics()
     print("MPA-Damage: Damage Metrics Summary")
     
-    -- Calculate and print total damage and average DPS
+    -- Calculate total damage and the total duration of all combat slices
     local totalDamage = 0
     for _, slice in ipairs(self.damageSlices) do
         for _, damage in pairs(slice) do
@@ -65,17 +65,38 @@ function DamagePlugin:PrintDamageMetrics()
         end
     end
 
+    -- Calculate total combat time based on the combat time slices
+    local totalCombatTime = 0
+    for _, combatSlice in ipairs(MythicPlusAnalyzer.combatTimes) do
+        totalCombatTime = totalCombatTime + (combatSlice.stop - combatSlice.start)
+    end
+
+    -- Calculate the total average DPS
+    local avgDPS = totalDamage / totalCombatTime
     print("MPA-Damage: Total Damage: " .. totalDamage)
-    local avgDPS = totalDamage / MythicPlusAnalyzer.totalTime
     print("MPA-Damage: Average DPS: " .. avgDPS)
 
-    -- Print Damage per Spell for each slice
+    -- Print Damage per Spell for each slice and calculate slice-specific DPS
     for sliceIndex, slice in ipairs(self.damageSlices) do
+        local sliceDamage = 0
+        local sliceCombatTime = MythicPlusAnalyzer.combatTimes[sliceIndex].stop - MythicPlusAnalyzer.combatTimes[sliceIndex].start
+
+        -- Calculate the total damage for the slice
+        for spellID, damage in pairs(slice) do
+            sliceDamage = sliceDamage + damage
+        end
+        
+        -- Calculate the slice DPS
+        local sliceDPS = sliceDamage / sliceCombatTime
         print("MPA-Damage: Combat Slice " .. sliceIndex .. ":")
+        print("MPA-Damage:   Slice Total Damage: " .. sliceDamage)
+        print("MPA-Damage:   Slice DPS: " .. sliceDPS)
+
+        -- Print Damage per Spell for the slice
         for spellID, damage in pairs(slice) do
             local spellName = GetSpellInfo(spellID) or "Unknown Spell"
-            local avgDamagePerSec = damage / MythicPlusAnalyzer.totalTime
-            print("MPA-Damage:   Spell: " .. spellName .. " (ID: " .. spellID .. ") - Total Damage: " .. damage .. " | Avg Damage Per Second: " .. avgDamagePerSec)
+            local spellDPS = damage / sliceCombatTime
+            print("MPA-Damage:   Spell: " .. spellName .. " (ID: " .. spellID .. ") - Total Damage: " .. damage .. " | DPS: " .. spellDPS)
         end
     end
 end
