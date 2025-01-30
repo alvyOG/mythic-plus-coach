@@ -1,67 +1,83 @@
+-- MPA DamagePlugin
 local DamagePlugin = CreateFrame("Frame")  -- Create a frame for the plugin
 DamagePlugin.events = {}
-DamagePlugin.totalDamage = 0
-DamagePlugin.spellDamage = {}
-DamagePlugin.damageStartTime = 0
+DamagePlugin.damageSlices = {}  -- List to store combat slices with damage data
 
--- Initialize DamagePlugin
-function DamagePlugin:StartTracking()
-    self:ResetDamageMetrics()
-    print("Mythic Plus Analyzer: Damage tracking started!")
-end
-
-function DamagePlugin:StopTracking()
-    self:PrintDamageMetrics()
-    print("Mythic Plus Analyzer: Damage tracking stopped!")
+-- Reset tracking metrics
+function DamagePlugin:ResetTrackingMetrics()
+    self.damageSlices = {}  -- Reset the damage slices
+    print("MPA-Damage: Damage tracking started!")
 end
 
 -- Track damage events
 function DamagePlugin:OnCombatLogEvent()
     local _, subevent, _, sourceGUID, _, _, _, _, _ = CombatLogGetCurrentEventInfo()
     local spellID, spellName, amount
-    if sourceGUID == UnitGUID("player") and subevent == "SPELL_DAMAGE" and MythicPlusAnalyzer.inCombat then
+
+    -- Check if the source is the player and if the event is SPELL_DAMAGE
+    if sourceGUID == UnitGUID("player") and subevent == "SPELL_DAMAGE" then
         spellID, spellName, _, amount, _, _, _, _, _, _ = select(12, CombatLogGetCurrentEventInfo())
-        print("Damage Event details: ", spellName, spellID, amount)
-        self.totalDamage = self.totalDamage + amount
-        -- Track damage per spell
-        if not self.spellDamage[spellID] then
-            self.spellDamage[spellID] = amount  -- Initialize with the first damage amount
-        else
-            self.spellDamage[spellID] = self.spellDamage[spellID] + amount
+
+        print("MPA-Damage: SPELL_DAMAGE subevent: ", spellName, spellID, amount)
+
+        -- Find the current combat slice
+        local currentSlice = MythicPlusAnalyzer.combatTimes[#MythicPlusAnalyzer.combatTimes]
+        if currentSlice then
+            local sliceIndex = #self.damageSlices
+            local damageData = self.damageSlices[sliceIndex]
+
+            if not damageData then
+                -- Initialize a new slice if it's the first event for this slice
+                damageData = {}
+                self.damageSlices[sliceIndex] = damageData
+            end
+
+            -- Track damage per spell in the current slice
+            if not damageData[spellID] then
+                damageData[spellID] = amount  -- Initialize with the first damage amount
+            else
+                damageData[spellID] = damageData[spellID] + amount
+            end
         end
     end
 end
 
--- Track combat time (now managed by Core.lua)
+-- Start a new damage slice when combat starts
 function DamagePlugin:OnCombatStart()
-    self.damageStartTime = GetTime()
-    print("DamagePlugin: Combat started!")
+    table.insert(self.damageSlices, {})
+    print("MPA-Damage: Combat started!")
 end
 
+-- Handle combat end, just print the associated message
 function DamagePlugin:OnCombatEnd()
-    local combatDuration = GetTime() - self.damageStartTime
-    print("DamagePlugin: Combat ended! Duration: " .. combatDuration)
+    print("MPA-Damage: Combat ended!")
 end
 
 -- Print Damage Metrics
 function DamagePlugin:PrintDamageMetrics()
-    print("Mythic Plus Analyzer: Damage Metrics Summary")
-    print("Total Damage: " .. self.totalDamage)
-    print("Average Damage Per Second: " .. (self.totalDamage / MythicPlusAnalyzer.totalCombatTime))
-
-    -- Print Damage per Spell
-    for spellID, damage in pairs(self.spellDamage) do
-        local spellName = GetSpellInfo(spellID) or "Unknown Spell"
-        local avgDamagePerSec = damage / MythicPlusAnalyzer.totalCombatTime
-        print("Spell: " .. spellName .. " (ID: " .. spellID .. ") - Total Damage: " .. damage .. " | Avg Damage Per Second: " .. avgDamagePerSec)
+    print("MPA-Damage: Damage Metrics Summary")
+    
+    -- Calculate and print total damage and average DPS
+    local totalDamage = 0
+    for _, slice in ipairs(self.damageSlices) do
+        for _, damage in pairs(slice) do
+            totalDamage = totalDamage + damage
+        end
     end
-end
 
--- Reset damage metrics
-function DamagePlugin:ResetDamageMetrics()
-    self.totalDamage = 0
-    self.spellDamage = {}
-    self.damageStartTime = 0
+    print("MPA-Damage: Total Damage: " .. totalDamage)
+    local avgDPS = totalDamage / MythicPlusAnalyzer.totalTime
+    print("MPA-Damage: Average DPS: " .. avgDPS)
+
+    -- Print Damage per Spell for each slice
+    for sliceIndex, slice in ipairs(self.damageSlices) do
+        print("MPA-Damage: Combat Slice " .. sliceIndex .. ":")
+        for spellID, damage in pairs(slice) do
+            local spellName = GetSpellInfo(spellID) or "Unknown Spell"
+            local avgDamagePerSec = damage / MythicPlusAnalyzer.totalTime
+            print("MPA-Damage:   Spell: " .. spellName .. " (ID: " .. spellID .. ") - Total Damage: " .. damage .. " | Avg Damage Per Second: " .. avgDamagePerSec)
+        end
+    end
 end
 
 -- Command to print damage metrics
@@ -73,11 +89,10 @@ end
 -- Command to reset damage metrics
 SLASH_DAMAGEPLUGINRESET1 = "/mpadreset"
 SlashCmdList["DAMAGEPLUGINRESET"] = function()
-    DamagePlugin:ResetDamageMetrics()
-    print("Mythic Plus Analyzer: Damage metrics reset.")
+    DamagePlugin:ResetTrackingMetrics()
 end
 
 -- Register the plugin with the Core module
 MythicPlusAnalyzer:RegisterPlugin(DamagePlugin)
 
-print("Mythic Plus Analyzer: Damage Plugin loaded!")
+print("MPA-Damage: Damage Plugin loaded!")
