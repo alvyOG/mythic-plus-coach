@@ -28,16 +28,24 @@ MythicPlusAnalyzer:SetScript("OnEvent", function(self, event, ...)
 end)
 
 -- Reset tracking-specific variables (but not global state like testMode or isTracking)
-function MythicPlusAnalyzer:ResetTracking()
+function MythicPlusAnalyzer:ResetTrackingMetrics()
     MythicPlusAnalyzer.combatTimes = {}
     MythicPlusAnalyzer.totalTime = 0
     MythicPlusAnalyzer.startTime = nil
+    
     print("MPA-Core: Tracking data has been reset.")
+
+    -- Notify plugins
+    for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
+        if plugin.ResetTracking then
+            plugin:ResetTracking()
+        end
+    end
 end
 
 -- Start tracking when entering a Challenge Mode dungeon
 function MythicPlusAnalyzer.events:CHALLENGE_MODE_START()
-    MythicPlusAnalyzer:ResetTracking()  -- Reset only relevant tracking variables
+    MythicPlusAnalyzer:ResetTrackingMetrics()  -- Reset only relevant tracking variables
     MythicPlusAnalyzer.startTime = GetTime()  -- Set start time AFTER resetting tracking data
     MythicPlusAnalyzer.isTracking = true
     print("MPA-Core: Challenge Mode started! Tracking enabled.")
@@ -156,7 +164,7 @@ end
 -- Command to reset combatTimes, totalTime, and startTime
 SLASH_MYTHICPLUSRESET1 = "/mpareset"
 SlashCmdList["MYTHICPLUSRESET"] = function()
-    MythicPlusAnalyzer:ResetTracking()
+    MythicPlusAnalyzer:ResetTrackingMetrics()
 end
 
 print("MPA-Core Core loaded!")
