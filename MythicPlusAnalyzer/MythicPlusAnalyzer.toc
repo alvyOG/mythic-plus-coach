@@ -1,4 +1,4 @@
-## Interface: 100005
+## Interface: 110002, 110005, 110007
 ## Title: Mythic Plus Analyzer
 ## Notes: Tracks and analyzes Mythic Plus dungeon metrics.
 ## Version: 0.1.0

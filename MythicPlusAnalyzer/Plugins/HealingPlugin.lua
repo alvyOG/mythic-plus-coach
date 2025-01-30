@@ -1,13 +1,11 @@
-local HealingPlugin = {}
+local HealingPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+HealingPlugin.events = {}
 HealingPlugin.totalHealing = 0
-HealingPlugin.healingPerSpell = {}
+HealingPlugin.spellHealing = {}
 HealingPlugin.healingStartTime = 0
-HealingPlugin.totalHealingTime = 0
-HealingPlugin.inCombat = false
 
 -- Initialize HealingPlugin
 function HealingPlugin:StartTracking()
-    -- Reuse the reset function to clear previous data
     self:ResetHealingMetrics()
     print("Mythic Plus Analyzer: Healing tracking started!")
 end
@@ -18,61 +16,52 @@ function HealingPlugin:StopTracking()
 end
 
 -- Track healing events
-function HealingPlugin.events:COMBAT_LOG_EVENT_UNFILTERED(_, _, event, _, sourceGUID, _, _, _, _, _, _, spellID, spellName, _, amount)
-    -- Only track healing done by the player
-    if sourceGUID == UnitGUID("player") then
-        if event == "SPELL_HEAL" and HealingPlugin.inCombat then
-            HealingPlugin.totalHealing = HealingPlugin.totalHealing + amount
-            -- Track healing per spell
-            if not HealingPlugin.healingPerSpell[spellID] then
-                HealingPlugin.healingPerSpell[spellID] = amount  -- Initialize with the first healing amount
-            else
-                HealingPlugin.healingPerSpell[spellID] = HealingPlugin.healingPerSpell[spellID] + amount
-            end
+function HealingPlugin:OnCombatLogEvent()
+    local _, subevent, _, sourceGUID, _, _, _, _, _ = CombatLogGetCurrentEventInfo()
+    local spellID, spellName, amount
+    if sourceGUID == UnitGUID("player") and subevent == "SPELL_HEAL" and MythicPlusAnalyzer.inCombat then
+        spellID, spellName, _, amount, _, _, _, _, _, _ = select(12, CombatLogGetCurrentEventInfo())
+        print("Healing Event details: ", spellName, spellID, amount)
+        self.totalHealing = self.totalHealing + amount
+        -- Track healing per spell
+        if not self.spellHealing[spellID] then
+            self.spellHealing[spellID] = amount  -- Initialize with the first healing amount
+        else
+            self.spellHealing[spellID] = self.spellHealing[spellID] + amount
         end
     end
 end
 
--- Track combat time
-local updateFrame = CreateFrame("Frame")
-updateFrame:SetScript("OnUpdate", function(self, elapsed)
-    if HealingPlugin.healingStartTime > 0 and HealingPlugin.inCombat then
-        HealingPlugin.totalHealingTime = HealingPlugin.totalHealingTime + elapsed
-    end
-end)
-
--- Handle player entering combat
-function HealingPlugin.events:PLAYER_REGEN_DISABLED()
-    HealingPlugin.inCombat = true
-    HealingPlugin.healingStartTime = GetTime()
-    print("Mythic Plus Analyzer: Player entered combat!")
+-- Track combat time (now managed by Core.lua)
+function HealingPlugin:OnCombatStart()
+    self.healingStartTime = GetTime()
+    print("HealingPlugin: Combat started!")
 end
 
--- Handle player leaving combat
-function HealingPlugin.events:PLAYER_REGEN_ENABLED()
-    HealingPlugin.inCombat = false
-    print("Mythic Plus Analyzer: Player left combat!")
+function HealingPlugin:OnCombatEnd()
+    local healingDuration = GetTime() - self.healingStartTime
+    print("HealingPlugin: Combat ended! Healing Duration: " .. healingDuration)
 end
 
 -- Print Healing Metrics
 function HealingPlugin:PrintHealingMetrics()
     print("Mythic Plus Analyzer: Healing Metrics Summary")
-    print("Total Healing: " .. HealingPlugin.totalHealing)
-    print("Average Healing Per Second: " .. (HealingPlugin.totalHealing / HealingPlugin.totalHealingTime))
+    print("Total Healing: " .. self.totalHealing)
+    print("Average Healing Per Second: " .. (self.totalHealing / MythicPlusAnalyzer.totalCombatTime))
 
     -- Print Healing per Spell
-    for spellID, healing in pairs(HealingPlugin.healingPerSpell) do
+    for spellID, healing in pairs(self.spellHealing) do
         local spellName = GetSpellInfo(spellID) or "Unknown Spell"
-        local avgHealingPerSec = healing / HealingPlugin.totalHealingTime
+        local avgHealingPerSec = healing / MythicPlusAnalyzer.totalCombatTime
         print("Spell: " .. spellName .. " (ID: " .. spellID .. ") - Total Healing: " .. healing .. " | Avg Healing Per Second: " .. avgHealingPerSec)
     end
 end
 
 -- Reset healing metrics
 function HealingPlugin:ResetHealingMetrics()
-    HealingPlugin.totalHealing = 0
-    HealingPlugin.healingPerSpell = {}
-    HealingPlugin.totalHealingTime = 0
+    self.totalHealing = 0
+    self.spellHealing = {}
+    self.healingStartTime = 0
 end
 
 -- Command to print healing metrics
@@ -90,10 +79,5 @@ end
 
 -- Register the plugin with the Core module
 MythicPlusAnalyzer:RegisterPlugin(HealingPlugin)
-
--- Register events for combat tracking
-HealingPlugin:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-HealingPlugin:RegisterEvent("PLAYER_REGEN_DISABLED")  -- Player enters combat
-HealingPlugin:RegisterEvent("PLAYER_REGEN_ENABLED")   -- Player exits combat
 
 print("Mythic Plus Analyzer: Healing Plugin loaded!")
