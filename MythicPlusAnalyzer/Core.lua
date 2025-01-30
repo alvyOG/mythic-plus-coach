@@ -37,8 +37,8 @@ function MythicPlusAnalyzer:ResetTrackingMetrics()
 
     -- Notify plugins
     for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
-        if plugin.ResetTracking then
-            plugin:ResetTracking()
+        if plugin.ResetTrackingMetrics then
+            plugin:ResetTrackingMetrics()
         end
     end
 end
