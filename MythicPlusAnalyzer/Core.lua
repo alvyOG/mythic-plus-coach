@@ -153,7 +153,7 @@ SlashCmdList["MYTHICPLUSTEST"] = function()
     MythicPlusAnalyzer.isTracking = MythicPlusAnalyzer.testMode  -- Tracking follows test mode outside Mythic+
 
     if MythicPlusAnalyzer.testMode then
-        MythicPlusAnalyzer:ResetTracking()  -- Reset first, then set start time
+        MythicPlusAnalyzer:ResetTrackingMetrics()  -- Reset first, then set start time
         MythicPlusAnalyzer.startTime = GetTime()  -- Set start time AFTER resetting tracking data
         print("MPA-Core: Test mode ENABLED. Tracking in all dungeons.")
     else
