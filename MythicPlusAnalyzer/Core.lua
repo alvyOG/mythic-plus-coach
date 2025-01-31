@@ -27,11 +27,39 @@ MythicPlusAnalyzer:SetScript("OnEvent", function(self, event, ...)
     end
 end)
 
--- Reset tracking-specific variables (but not global state like testMode or isTracking)
+-- Track total dungeon time separately
+local updateFrame = CreateFrame("Frame")
+updateFrame:SetScript("OnUpdate", function(self, elapsed)
+    if MythicPlusAnalyzer.isTracking and MythicPlusAnalyzer.startTime then
+        MythicPlusAnalyzer.totalTime = GetTime() - MythicPlusAnalyzer.startTime
+    end
+end)
+
+print("MPA-Core Core loaded!")
+
+-- Register plugin function
+function MythicPlusAnalyzer:RegisterPlugin(plugin)
+    table.insert(self.plugins, plugin)
+end
+
+-- Function to toggle tracking
+function MythicPlusAnalyzer:ToggleTrackingState()
+    self.isTracking = not self.isTracking
+    
+    if self.isTracking then
+        self:ResetTrackingMetrics()
+        self.startTime = GetTime()
+        print("MPA-Core: Tracking ENABLED.")
+    else
+        print("MPA-Core: Tracking DISABLED.")
+    end
+end
+
+-- Reset tracking-specific variables (but not global state like testMode)
 function MythicPlusAnalyzer:ResetTrackingMetrics()
-    MythicPlusAnalyzer.combatTimes = {}
-    MythicPlusAnalyzer.totalTime = 0
-    MythicPlusAnalyzer.startTime = nil
+    self.combatTimes = {}
+    self.totalTime = 0
+    self.startTime = nil
     
     print("MPA-Core: Tracking data has been reset.")
 
@@ -111,19 +139,6 @@ function MythicPlusAnalyzer.events:COMBAT_LOG_EVENT_UNFILTERED()
     end
 end
 
--- Track total dungeon time separately
-local updateFrame = CreateFrame("Frame")
-updateFrame:SetScript("OnUpdate", function(self, elapsed)
-    if MythicPlusAnalyzer.isTracking and MythicPlusAnalyzer.startTime then
-        MythicPlusAnalyzer.totalTime = GetTime() - MythicPlusAnalyzer.startTime
-    end
-end)
-
--- Register plugin function
-function MythicPlusAnalyzer:RegisterPlugin(plugin)
-    table.insert(self.plugins, plugin)
-end
-
 -- Command to print stored total time
 SLASH_MYTHICPLUSANALYZER1 = "/mpaprint"
 SlashCmdList["MYTHICPLUSANALYZER"] = function()
@@ -149,22 +164,17 @@ SlashCmdList["MYTHICPLUSTEST"] = function()
         return
     end
 
-    MythicPlusAnalyzer.testMode = not MythicPlusAnalyzer.testMode
-    MythicPlusAnalyzer.isTracking = MythicPlusAnalyzer.testMode  -- Tracking follows test mode outside Mythic+
+    MythicPlusAnalyzer:ToggleTrackingState()
 
     if MythicPlusAnalyzer.testMode then
-        MythicPlusAnalyzer:ResetTrackingMetrics()  -- Reset first, then set start time
-        MythicPlusAnalyzer.startTime = GetTime()  -- Set start time AFTER resetting tracking data
         print("MPA-Core: Test mode ENABLED. Tracking in all dungeons.")
     else
         print("MPA-Core: Test mode DISABLED. Tracking only in Mythic+.")
     end
 end
 
--- Command to reset combatTimes, totalTime, and startTime
+-- Command to reset tracking metrics
 SLASH_MYTHICPLUSRESET1 = "/mpareset"
 SlashCmdList["MYTHICPLUSRESET"] = function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end
-
-print("MPA-Core Core loaded!")
