@@ -1,3 +1,4 @@
+-- MPA Core Window
 -- Load AceGUI
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -13,20 +14,26 @@ CoreWindow:Hide()  -- Start hidden
 
 -- Enable/Disable Tracking Button
 local trackButton = AceGUI:Create("Button")
-trackButton:SetText("Toggle Tracking")
+trackButton:SetText("Start")
 trackButton:SetWidth(140)
 trackButton:SetCallback("OnClick", function()
-    MythicPlusAnalyzer.isTracking = not MythicPlusAnalyzer.isTracking
-    print("MPA-Core: Tracking " .. (MythicPlusAnalyzer.isTracking and "Enabled" or "Disabled"))
+    MythicPlusAnalyzer:ToggleTrackingState()
+    if MythicPlusAnalyzer.isTracking then
+        trackButton:SetText("Stop")
+    else
+        trackButton:SetText("Start")
+    end
+    print("MPA-Core Window: Tracking state changed")
 end)
 CoreWindow:AddChild(trackButton)
 
 -- Reset Data Button
 local resetButton = AceGUI:Create("Button")
-resetButton:SetText("Reset Data")
+resetButton:SetText("Reset")
 resetButton:SetWidth(140)
 resetButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
+    print("MPA-Core Window: Reset tracking metrics")
 end)
 CoreWindow:AddChild(resetButton)
 
@@ -40,4 +47,4 @@ SlashCmdList["MPACOREFRAME"] = function()
     end
 end
 
-print("MPA-Core: Core Window Plugin loaded with AceGUI!")
+print("MPA-Core Window: Loaded successfully")
