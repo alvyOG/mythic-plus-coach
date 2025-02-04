@@ -166,3 +166,8 @@ label-studio/export/
 label-studio/local_data/
 label-studio/media/
 
+# Submodules
+MythicPlusAnalyzer/Libs/Ace3/tests/
+MythicPlusAnalyzer/Libs/Ace3/tests/*
+MythicPlusAnalyzer/Libs/Ace3/tests/**/*
+
