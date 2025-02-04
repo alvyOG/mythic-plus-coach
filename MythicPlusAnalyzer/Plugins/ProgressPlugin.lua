@@ -16,18 +16,12 @@ end
 
 -- Getter for startTime
 function ProgressPlugin:GetStartTime()
-    if self.startTime then
-        return self.startTime
-    end
-    return 0
+    return self.startTime or 0
 end
 
 -- Getter for progressTime
 function ProgressPlugin:GetProgressTime()
-    if self.progressTime then
-        return self.progressTime
-    end
-    return 0
+    return self.progressTime or 0
 end
 
 -- Setter for progressTime
@@ -37,33 +31,49 @@ function ProgressPlugin:SetProgressTime(time)
     end
 end
 
--- Print progress metrics
-function ProgressPlugin:PrintProgressMetrics()
-    local pTime = ProgressPlugin:GetProgressTime()
+-- Formats progress time as a string
+function ProgressPlugin:FormatProgressMetrics()
+    local pTime = self:GetProgressTime()
     local hours = math.floor(pTime / 3600)
     local minutes = math.floor((pTime % 3600) / 60)
     local seconds = math.floor(pTime % 60)
     local millis = math.floor((pTime % 60 - math.floor(pTime % 60)) * 1000)
-    local pString = string.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis)
-    print("MPA-Progress: Progress Time: ", pString)
+    return string.format("|cffffffffProgress Time: %02d:%02d:%02d.%03d|r", hours, minutes, seconds, millis)
 end
 
--- Track dungeon progress time
-local updateFrame = CreateFrame("Frame")
-updateFrame:SetScript("OnUpdate", function(self)
-    local startTime = ProgressPlugin:GetStartTime()
-    if MythicPlusAnalyzer.isTracking and startTime > 0 then
-        ProgressPlugin:SetProgressTime(GetTime() - startTime)
-    end
-end)
+-- Function to return the UI content for this plugin
+function ProgressPlugin:GetContent()
+    local container = AceGUI:Create("SimpleGroup")
+    container:SetFullWidth(true)
+    container:SetLayout("Flow")
 
--- Command to print damage metrics
+    -- Progress Time Label
+    local progressLabel = AceGUI:Create("Label")
+    progressLabel:SetText(self:FormatProgressMetrics())
+    progressLabel:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
+    progressLabel:SetFullWidth(true)
+    container:AddChild(progressLabel)
+
+    -- Timer Update Logic
+    local updateFrame = CreateFrame("Frame")
+    updateFrame:SetScript("OnUpdate", function()
+        local startTime = self:GetStartTime()
+        if MythicPlusAnalyzer.isTracking and startTime > 0 then
+            self:SetProgressTime(GetTime() - startTime)
+        end
+        progressLabel:SetText(self:FormatProgressMetrics())
+    end)
+
+    return container
+end
+
+-- Command to print formatted progress time
 SLASH_PROGRESSPLUGINPRINT1 = "/mpapprint"
 SlashCmdList["PROGRESSPLUGINPRINT"] = function()
-    ProgressPlugin:PrintProgressMetrics()
+    print("MPA-Progress: " .. ProgressPlugin:FormatProgressMetrics())
 end
 
--- Command to reset damage metrics
+-- Command to reset progress metrics
 SLASH_PROGRESSPLUGINRESET1 = "/mpapreset"
 SlashCmdList["PROGRESSPLUGINRESET"] = function()
     ProgressPlugin:ResetTrackingMetrics()
