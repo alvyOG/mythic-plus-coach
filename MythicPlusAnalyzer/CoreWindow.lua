@@ -7,12 +7,12 @@ do
     local Version = 1
 
     local function Hide(self)
-		self.frame:Hide()
-	end
+        self.frame:Hide()
+    end
 
-	local function Show(self)
-		self.frame:Show()
-	end
+    local function Show(self)
+        self.frame:Show()
+    end
 
     local function OnAcquire(self)
         self:SetWidth(370)
@@ -86,34 +86,60 @@ titleLabel:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
 titleLabel:SetWidth(130)
 topBar:AddChild(titleLabel)
 
--- Start/Stop Button
-local trackButton = AceGUI:Create("Button")
-trackButton:SetText("|cffffcc00Start|r")
-trackButton:SetWidth(70)
-trackButton:SetCallback("OnClick", function()
+-- Function to Create Icon Buttons with Tooltip
+local function CreateIconButton(icon, tooltipText, width, onClick)
+    local button = AceGUI:Create("Icon")
+    button:SetImage(icon)
+    button:SetImageSize(16, 16)
+    button:SetWidth(width)
+    button:SetCallback("OnClick", onClick)
+    button:SetCallback("OnEnter", function(widget)
+        GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+        GameTooltip:SetText(tooltipText, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    button:SetCallback("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    return button
+end
+
+-- Start/Stop Button (Play ▶️ / Stop ⏹️)
+local trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up", "Start", 24, function()
     MythicPlusAnalyzer:ToggleTrackingState()
     if MythicPlusAnalyzer.isTracking then
-        trackButton:SetText("|cffffcc00Stop|r")
+        trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
+        trackButton:SetCallback("OnEnter", function(widget)
+            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+            GameTooltip:SetText("Stop", 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
     else
-        trackButton:SetText("|cffffcc00Start|r")
+        trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
+        trackButton:SetCallback("OnEnter", function(widget)
+            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+            GameTooltip:SetText("Start", 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
     end
 end)
 topBar:AddChild(trackButton)
 
--- Reset Button
-local resetButton = AceGUI:Create("Button")
-resetButton:SetText("|cffffcc00Reset|r")
-resetButton:SetWidth(70)
-resetButton:SetCallback("OnClick", function()
+-- Reset Button (Undo Arrow ♻️)
+local resetButton = CreateIconButton("Interface\\Buttons\\UI-RefreshButton", "Reset", 24, function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end)
 topBar:AddChild(resetButton)
 
--- Close Button
-local closeButton = AceGUI:Create("Button")
-closeButton:SetText("|cffffcc00Close|r")
-closeButton:SetWidth(70)
-closeButton:SetCallback("OnClick", function()
+-- Settings Button (Gear ⚙️)
+local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon", "Settings", 24, function()
+    -- Placeholder for future settings window functionality
+    print("Settings button clicked (Functionality coming soon!)")
+end)
+topBar:AddChild(settingsButton)
+
+-- Close Button (X ❌)
+local closeButton = CreateIconButton("Interface\\Buttons\\UI-Panel-MinimizeButton-Up", "Close", 24, function()
     CoreWindow:Hide()
 end)
 topBar:AddChild(closeButton)
@@ -124,25 +150,28 @@ coreContent:SetFullWidth(true)
 coreContent:SetLayout("Flow")
 CoreWindow:AddChild(coreContent)
 
--- Total Time Label (Large White Text)
-local totalTimeLabel = AceGUI:Create("Label")
-totalTimeLabel:SetText("|cffffffffTotal Time: 00:00:00|r")
-totalTimeLabel:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
-totalTimeLabel:SetFullWidth(true)
-coreContent:AddChild(totalTimeLabel)
+-- Populate tabs dynamically from plugins
+local tabList = {}
+for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
+    if plugin.GetContent then
+        table.insert(tabList, { text = plugin.name, value = plugin.name })
+    end
+end
+coreContent:SetTabs(tabList)
 
--- Timer Update Logic
-local updateFrame = CreateFrame("Frame")
-updateFrame:SetScript("OnUpdate", function()
-    local ProgressPlugin = MythicPlusAnalyzer:GetPlugin("ProgressPlugin")
-    local pTime = ProgressPlugin:GetProgressTime()
-    local hours = math.floor(pTime / 3600)
-    local minutes = math.floor((pTime % 3600) / 60)
-    local seconds = math.floor(pTime % 60)
-    local millis = math.floor((pTime % 60 - math.floor(pTime % 60)) * 1000)
-    local pString = string.format("|cffffffffProgress Time: %02d:%02d:%02d.%03d|r", hours, minutes, seconds, millis)
-    totalTimeLabel:SetText(pString)
+-- Handle tab selection and load plugin content
+coreContent:SetCallback("OnGroupSelected", function(container, _, tabName)
+    container:ReleaseChildren() -- Clear previous content
+    local plugin = MythicPlusAnalyzer:GetPlugin(tabName)
+    if plugin and plugin.GetContent then
+        container:AddChild(plugin:GetContent())
+    end
 end)
+
+-- Set default tab if available
+if #tabList > 0 then
+    coreContent:SelectTab(tabList[1].value)
+end
 
 -- Slash Command to Toggle GUI
 SLASH_MPACOREFRAME1 = "/mpa"
