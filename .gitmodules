@@ -1,0 +1,3 @@
+[submodule "MythicPlusAnalyzer/Libs/Ace3"]
+	path = MythicPlusAnalyzer/Libs/Ace3
+	url = https://github.com/Stanzilla/Ace3.git

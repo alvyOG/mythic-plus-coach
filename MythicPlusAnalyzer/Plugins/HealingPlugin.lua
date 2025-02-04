@@ -1,11 +1,12 @@
 -- MPA HealingPlugin
 local HealingPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+HealingPlugin.name = "HealingPlugin"
 HealingPlugin.events = {}
 HealingPlugin.healingSlices = {}  -- List to store combat slices with Healing data
 
 -- Reset tracking metrics
 function HealingPlugin:ResetTrackingMetrics()
-    self.healingSlices = {}  -- Reset the damage slices
+    self.healingSlices = {}  -- Reset the healing slices
     print("MPA-Healing: Healing tracking reset!")
 end
 

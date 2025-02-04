@@ -1,11 +1,12 @@
 -- MPA DamagePlugin
 local DamagePlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+DamagePlugin.name = "DamagePlugin"
 DamagePlugin.events = {}
-DamagePlugin.healingSlices = {}  -- List to store combat slices with damage data
+DamagePlugin.damageSlices = {}  -- List to store combat slices with damage data
 
 -- Reset tracking metrics
 function DamagePlugin:ResetTrackingMetrics()
-    self.healingSlices = {}  -- Reset the damage slices
+    self.damageSlices = {}  -- Reset the damage slices
     print("MPA-Damage: Damage tracking reset!")
 end
 
@@ -23,13 +24,13 @@ function DamagePlugin:OnCombatLogEvent()
         -- Find the current combat slice
         local currentSlice = MythicPlusAnalyzer.combatTimes[#MythicPlusAnalyzer.combatTimes]
         if currentSlice then
-            local sliceIndex = #self.healingSlices
-            local damageData = self.healingSlices[sliceIndex]
+            local sliceIndex = #self.damageSlices
+            local damageData = self.damageSlices[sliceIndex]
 
             if not damageData then
                 -- Initialize a new slice if it's the first event for this slice
                 damageData = {}
-                self.healingSlices[sliceIndex] = damageData
+                self.damageSlices[sliceIndex] = damageData
             end
 
             -- Track damage per spell in the current slice
@@ -44,7 +45,7 @@ end
 
 -- Start a new damage slice when combat starts
 function DamagePlugin:OnCombatStart()
-    table.insert(self.healingSlices, {})
+    table.insert(self.damageSlices, {})
     print("MPA-Damage: Combat started!")
 end
 
@@ -59,7 +60,7 @@ function DamagePlugin:PrintDamageMetrics()
     
     -- Calculate total damage and the total duration of all combat slices
     local totalDamage = 0
-    for _, slice in ipairs(self.healingSlices) do
+    for _, slice in ipairs(self.damageSlices) do
         for _, damage in pairs(slice) do
             totalDamage = totalDamage + damage
         end
@@ -77,7 +78,7 @@ function DamagePlugin:PrintDamageMetrics()
     print("MPA-Damage: Average DPS: " .. avgDPS)
 
     -- Print Damage per Spell for each slice and calculate slice-specific DPS
-    for sliceIndex, slice in ipairs(self.healingSlices) do
+    for sliceIndex, slice in ipairs(self.damageSlices) do
         local sliceDamage = 0
         local sliceCombatTime = MythicPlusAnalyzer.combatTimes[sliceIndex].stop - MythicPlusAnalyzer.combatTimes[sliceIndex].start
 
