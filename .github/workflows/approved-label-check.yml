@@ -1,0 +1,36 @@
+name: Restrict 'approved' label
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+
+jobs:
+  restrict-approved-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if the label is 'approved'
+        if: github.event.label.name == 'approved'
+        run: |
+          # Get the username of the person who applied the label
+          USER=$(jq --raw-output .sender.login "$GITHUB_EVENT_PATH")
+          
+          # Define the list of allowed users (moderators or admins)
+          APPROVED_USERS=("alice" "bob")
+          
+          # Check if the user applying the label is in the allowed list
+          if [[ ! " ${APPROVED_USERS[@]} " =~ " ${USER} " ]]; then
+            echo "User $USER is not allowed to add the 'approved' label."
+            
+            # Remove the 'approved' label if applied by a non-allowed user
+            curl -X DELETE \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels/approved"
+            
+            # Optionally, add a comment explaining the restriction
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -d '{"body": "Only moderators or admins are allowed to apply the `approved` label."}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          fi
