@@ -15,9 +15,11 @@ jobs:
         id: check_label
         run: |
           LABELS_JSON='${{ toJson(github.event.issue.labels) }}'
-          if echo "$LABELS_JSON" | grep -q '"bug"'; then
+          
+          # Check for "bug" using jq.
+          if echo "$LABELS_JSON" | jq -e '.[].name | select(. == "bug")' > /dev/null; then
             echo "BRANCH_PREFIX=bugs/bug" >> $GITHUB_ENV
-          elif echo "$LABELS_JSON" | grep -q '"feature"'; then
+          elif echo "$LABELS_JSON" | jq -e '.[].name | select(. == "feature")' > /dev/null; then
             echo "BRANCH_PREFIX=features/feature" >> $GITHUB_ENV
           else
             echo "❌ Issue is missing 'bug' or 'feature' label. Exiting."
