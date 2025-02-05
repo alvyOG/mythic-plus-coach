@@ -69,22 +69,10 @@ do
 end
 
 -- Create Core Window
-local CoreWindow = AceGUI:Create("MPACoreWindow")
+CoreWindow = AceGUI:Create("MPACoreWindow")
 CoreWindow:SetLayout("List")
 CoreWindow:Hide()  -- Start hidden
-
--- Top Bar (Title + Buttons)
-local topBar = AceGUI:Create("SimpleGroup")
-topBar:SetFullWidth(true)
-topBar:SetLayout("Flow")
-CoreWindow:AddChild(topBar)
-
--- Title Label
-local titleLabel = AceGUI:Create("Label")
-titleLabel:SetText("|cffffcc00M+ Analyzer|r")
-titleLabel:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
-titleLabel:SetWidth(130)
-topBar:AddChild(titleLabel)
+CoreWindow.trackButton = nil
 
 -- Function to Create Icon Buttons with Tooltip
 local function CreateIconButton(icon, tooltipText, width, onClick)
@@ -104,26 +92,45 @@ local function CreateIconButton(icon, tooltipText, width, onClick)
     return button
 end
 
+-- Function to update tabs
+function CoreWindow:UpdateTabs(tabOrder)
+    -- TODO: Implement this function
+    print("MPA-Core Window: UpdateTabs() called")
+end
+
+-- Top Bar (Title + Buttons)
+local topBar = AceGUI:Create("SimpleGroup")
+topBar:SetFullWidth(true)
+topBar:SetLayout("Flow")
+CoreWindow:AddChild(topBar)
+
+-- Title Label
+local titleLabel = AceGUI:Create("Label")
+titleLabel:SetText("|cffffcc00M+ Analyzer|r")
+titleLabel:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+titleLabel:SetWidth(130)
+topBar:AddChild(titleLabel)
+
 -- Start/Stop Button (Play ▶️ / Stop ⏹️)
-local trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up", "Start", 24, function()
+CoreWindow.trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up", "Start", 24, function()
     MythicPlusAnalyzer:ToggleTrackingState()
     if MythicPlusAnalyzer.isTracking then
-        trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
-        trackButton:SetCallback("OnEnter", function(widget)
-            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
-            GameTooltip:SetText("Stop", 1, 1, 1, 1, true)
-            GameTooltip:Show()
-        end)
-    else
-        trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
-        trackButton:SetCallback("OnEnter", function(widget)
+        CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
+        CoreWindow.trackButton:SetCallback("OnEnter", function(widget)
             GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
             GameTooltip:SetText("Start", 1, 1, 1, 1, true)
             GameTooltip:Show()
         end)
+    else
+        CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
+        CoreWindow.trackButton:SetCallback("OnEnter", function(widget)
+            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+            GameTooltip:SetText("Stop", 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
     end
 end)
-topBar:AddChild(trackButton)
+topBar:AddChild(CoreWindow.trackButton)
 
 -- Reset Button (Undo Arrow ♻️)
 local resetButton = CreateIconButton("Interface\\Buttons\\UI-RefreshButton", "Reset", 24, function()
@@ -133,8 +140,7 @@ topBar:AddChild(resetButton)
 
 -- Settings Button (Gear ⚙️)
 local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon", "Settings", 24, function()
-    -- Placeholder for future settings window functionality
-    print("Settings button clicked (Functionality coming soon!)")
+    CoreSettings:Show()
 end)
 topBar:AddChild(settingsButton)
 

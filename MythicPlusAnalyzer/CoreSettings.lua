@@ -1,40 +1,41 @@
 -- Core Settings Window for Mythic Plus Analyzer
 local AceGUI = LibStub("AceGUI-3.0")
 
-local CoreSettings = {}
-local settingsWindow = nil
-local trackingTabsOrder = {}
+CoreSettings = {}
+CoreSettings.settingsWindow = nil
+CoreSettings.trackingTabsOrder = {}
 
 -- Show the Settings Window
 function CoreSettings:Show()
     if not settingsWindow then
         self:CreateSettingsWindow()
     end
-    settingsWindow:Show()
+    self.settingsWindow:Show()
 end
 
 -- Hide the Settings Window
 function CoreSettings:Hide()
-    if settingsWindow then
-        settingsWindow:Hide()
+    if self.settingsWindow then
+        self.settingsWindow:Hide()
     end
 end
 
 -- Create the Settings Window
 function CoreSettings:CreateSettingsWindow()
-    settingsWindow = AceGUI:Create("Frame")
-    settingsWindow:SetTitle("M+ Analyzer Settings")
-    settingsWindow:SetLayout("Flow")
-    settingsWindow:SetWidth(400)
-    settingsWindow:SetHeight(300)
+    self.settingsWindow = AceGUI:Create("Frame")
+    self.settingsWindow:SetTitle("M+ Analyzer Settings")
+    self.settingsWindow:SetLayout("Flow")
+    self.settingsWindow:SetWidth(400)
+    self.settingsWindow:SetHeight(300)
     
     local settingsTabs = AceGUI:Create("TabGroup")
     settingsTabs:SetLayout("Flow")
+    settingsTabs:SetFullWidth("True")
     settingsTabs:SetTabs({
         { text = "General", value = "General" },
         { text = "Tracking", value = "Tracking" }
     })
-    settingsWindow:AddChild(settingsTabs)
+    self.settingsWindow:AddChild(settingsTabs)
     
     local generalContainer = AceGUI:Create("SimpleGroup")
     generalContainer:SetFullWidth(true)
@@ -54,25 +55,25 @@ end
 function CoreSettings:CreateTrackingTab(container)
     container:ReleaseChildren()
     local plugins = MythicPlusAnalyzer.plugins
-    if #trackingTabsOrder  == 0 then
+    if #self.trackingTabsOrder  == 0 then
         for _, plugin in ipairs(plugins) do
-            table.insert(trackingTabsOrder, {text = plugin.name, value = plugin.name})
+            table.insert(self.trackingTabsOrder, {text = plugin.name, value = plugin.name})
         end
     end
     
-    for index, tab in ipairs(trackingTabsOrder) do
+    for index, tab in ipairs(self.trackingTabsOrder) do
         local group = AceGUI:Create("SimpleGroup")
         group:SetFullWidth(true)
         group:SetLayout("Flow")
 
         local pluginLabel = AceGUI:Create("Label")
         pluginLabel:SetText(tab.value)
-        pluginLabel:SetWidth(150)
+        pluginLabel:SetWidth(120)
         group:AddChild(pluginLabel)
 
         local enableButton = AceGUI:Create("Button")
         enableButton:SetText("Enable")
-        enableButton:SetWidth(60)
+        enableButton:SetWidth(80)
         enableButton:SetCallback("OnClick", function()
             MythicPlusAnalyzer:SetPluginEnable(tab.value, true)
         end)
@@ -80,7 +81,7 @@ function CoreSettings:CreateTrackingTab(container)
 
         local disableButton = AceGUI:Create("Button")
         disableButton:SetText("Disable")
-        disableButton:SetWidth(60)
+        disableButton:SetWidth(80)
         disableButton:SetCallback("OnClick", function()
             MythicPlusAnalyzer:SetPluginEnable(tab.value, false)
         end)
@@ -91,8 +92,8 @@ function CoreSettings:CreateTrackingTab(container)
         upButton:SetWidth(30)
         upButton:SetCallback("OnClick", function()
             if index > 1 then
-                trackingTabsOrder[index], trackingTabsOrder[index - 1] = trackingTabsOrder[index - 1], trackingTabsOrder[index]
-                CoreWindow:UpdateTabs(trackingTabsOrder)
+                self.trackingTabsOrder[index], self.trackingTabsOrder[index - 1] = self.trackingTabsOrder[index - 1], self.trackingTabsOrder[index]
+                CoreWindow:UpdateTabs(self.trackingTabsOrder)
                 self:CreateTrackingTab(container)
             end
         end)
@@ -102,9 +103,9 @@ function CoreSettings:CreateTrackingTab(container)
         downButton:SetText("↓")
         downButton:SetWidth(30)
         downButton:SetCallback("OnClick", function()
-            if index < #trackingTabsOrder then
-                trackingTabsOrder[index], trackingTabsOrder[index + 1] = trackingTabsOrder[index + 1], trackingTabsOrder[index]
-                CoreWindow:UpdateTabs(trackingTabsOrder)
+            if index < #self.trackingTabsOrder then
+                self.trackingTabsOrder[index], self.trackingTabsOrder[index + 1] = self.trackingTabsOrder[index + 1], self.trackingTabsOrder[index]
+                CoreWindow:UpdateTabs(self.trackingTabsOrder)
                 self:CreateTrackingTab(container)
             end
         end)
@@ -116,8 +117,8 @@ end
 
 function CoreSettings:ResetSettings()
     CoreSettings:Hide()
-    settingsWindow = nil
-    trackingTabsOrder = {}
+    self.settingsWindow = nil
+    self.trackingTabsOrder = {}
 end
 
 -- Open Settings Command

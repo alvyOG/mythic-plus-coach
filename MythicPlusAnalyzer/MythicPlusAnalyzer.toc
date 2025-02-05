@@ -15,6 +15,7 @@ Libs/Ace3/AceTimer-3.0/AceTimer-3.0.lua
 # Core Files
 Core.lua
 CoreWindow.lua
+CoreSettings.lua
 
 # Plugins
 Plugins/ProgressPlugin.lua

@@ -70,6 +70,12 @@ function MythicPlusAnalyzer:ResetTrackingMetrics()
     end
 end
 
+-- Method to Enable/Disable Plugin
+function MythicPlusAnalyzer:SetPluginEnable(enable)
+    -- TODO: Implement this function
+    print("MPA-Core: SetPluginEnable() called")
+end
+
 -- Start tracking when entering a Challenge Mode dungeon
 function MythicPlusAnalyzer.events:CHALLENGE_MODE_START()
     MythicPlusAnalyzer:ResetTrackingMetrics()  -- Reset only relevant tracking variables
