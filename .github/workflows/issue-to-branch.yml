@@ -3,6 +3,7 @@ name: Create Feature or Bug Branch from Approved Issues
 on:
   issues:
     types: [labeled]
+  workflow_dispatch: # Allow Github Actions to run this manually 
 
 jobs:
   create-branch:
