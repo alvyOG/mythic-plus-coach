@@ -161,10 +161,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# Label Studio
-label-studio/export/
-label-studio/local_data/
-label-studio/media/
+# Deprecated
+.deprecated
 
 # Submodules
 MythicPlusAnalyzer/Libs/
