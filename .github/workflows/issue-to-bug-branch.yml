@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: dev
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Branch Prefix
         run: echo "BRANCH_PREFIX=bugs/bug" >> $GITHUB_ENV
@@ -33,12 +34,12 @@ jobs:
 
       - name: Create and Push Branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
-          git push https://x-access-token:${GH_TOKEN}@github.com/alvyOG/mythic-plus-coach.git "$BRANCH_NAME"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/alvyOG/mythic-plus-coach.git "$BRANCH_NAME"
 
       - name: Comment on Issue
         run: |
