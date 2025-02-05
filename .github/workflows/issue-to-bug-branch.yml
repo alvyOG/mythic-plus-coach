@@ -23,7 +23,10 @@ jobs:
         run: |
           ISSUE_TITLE="${{ github.event.issue.title }}"
           ISSUE_NUMBER="${{ github.event.issue.number }}"
-          SAFE_TITLE=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-*//;s/-*$//')
+          # Remove [BUG]
+          SAFE_TITLE=$(echo "$ISSUE_TITLE" | sed -E 's/^\[BUG\]\s*//')
+          # Make title branch friendly
+          SAFE_TITLE=$(echo "$SAFE_TITLE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-*//;s/-*$//')
           BRANCH_NAME="${BRANCH_PREFIX}-${SAFE_TITLE}-${ISSUE_NUMBER}"
           echo "Branch name: $BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
@@ -35,7 +38,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
-          git push origin "$BRANCH_NAME"
+          git push https://x-access-token:${GH_TOKEN}@github.com/alvyOG/mythic-plus-coach.git "$BRANCH_NAME"
 
       - name: Comment on Issue
         run: |
