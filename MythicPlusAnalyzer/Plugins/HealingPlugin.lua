@@ -2,11 +2,11 @@
 local HealingPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
 HealingPlugin.name = "HealingPlugin"
 HealingPlugin.events = {}
-HealingPlugin.healingSlices = {}  -- List to store combat slices with Healing data
+HealingPlugin.healingSegments = {}  -- List to store combat slices with Healing data
 
 -- Reset tracking metrics
 function HealingPlugin:ResetTrackingMetrics()
-    self.healingSlices = {}  -- Reset the healing slices
+    self.healingSegments = {}  -- Reset the healing slices
     print("MPA-Healing: Healing tracking reset!")
 end
 
@@ -22,15 +22,15 @@ function HealingPlugin:OnCombatLogEvent()
         print("MPA-Healing: SPELL_HEALING subevent: ", spellName, spellID, amount)
 
         -- Find the current combat slice
-        local currentSlice = MythicPlusAnalyzer.combatTimes[#MythicPlusAnalyzer.combatTimes]
+        local currentSlice = CoreSegments.combatSegments[#CoreSegments.combatSegments]
         if currentSlice then
-            local sliceIndex = #self.healingSlices
-            local healingData = self.healingSlices[sliceIndex]
+            local sliceIndex = #self.healingSegments
+            local healingData = self.healingSegments[sliceIndex]
 
             if not healingData then
                 -- Initialize a new slice if it's the first event for this slice
                 healingData = {}
-                self.healingSlices[sliceIndex] = healingData
+                self.healingSegments[sliceIndex] = healingData
             end
 
             -- Track Healing per spell in the current slice
@@ -45,7 +45,7 @@ end
 
 -- Start a new Healing slice when combat starts
 function HealingPlugin:OnCombatStart()
-    table.insert(self.healingSlices, {})
+    table.insert(self.healingSegments, {})
     print("MPA-Healing: Combat started!")
 end
 
@@ -60,7 +60,7 @@ function HealingPlugin:PrintHealingMetrics()
 
     -- Calculate total Healing and the total duration of all combat slices
     local totalHealing = 0
-    for _, slice in ipairs(self.healingSlices) do
+    for _, slice in ipairs(self.healingSegments) do
         for _, healing in pairs(slice) do
             totalHealing = totalHealing + healing
         end
@@ -68,7 +68,7 @@ function HealingPlugin:PrintHealingMetrics()
 
     -- Calculate total combat time based on the combat time slices
     local totalCombatTime = 0
-    for _, combatSlice in ipairs(MythicPlusAnalyzer.combatTimes) do
+    for _, combatSlice in ipairs(CoreSegments.combatSegments) do
         totalCombatTime = totalCombatTime + (combatSlice.stop - combatSlice.start)
     end
 
@@ -78,9 +78,9 @@ function HealingPlugin:PrintHealingMetrics()
     print("MPA-Healing: Average HPS: " .. avgHPS)
 
     -- Print Healing per Spell for each slice and calculate slice-specific HPS
-    for sliceIndex, slice in ipairs(self.healingSlices) do
+    for sliceIndex, slice in ipairs(self.healingSegments) do
         local sliceHealing = 0
-        local sliceCombatTime = MythicPlusAnalyzer.combatTimes[sliceIndex].stop - MythicPlusAnalyzer.combatTimes[sliceIndex].start
+        local sliceCombatTime = CoreSegments.combatSegments[sliceIndex].stop - CoreSegments.combatSegments[sliceIndex].start
 
         -- Calculate the total healing for the slice
         for spellID, healing in pairs(slice) do

@@ -2,13 +2,13 @@
 local ProgressPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
 ProgressPlugin.name = "ProgressPlugin"
 ProgressPlugin.events = {}
-ProgressPlugin.progressSlices = {}  -- List to store progress slices with progress data
+ProgressPlugin.progressSegments = {}  -- List to store progress slices with progress data
 ProgressPlugin.startTime = nil
 ProgressPlugin.progressTime = nil
 
 -- Reset tracking metrics
 function ProgressPlugin:ResetTrackingMetrics()
-    self.progressSlices = {}  -- Reset the progress slices
+    self.progressSegments = {}  -- Reset the progress slices
     self.startTime = GetTime()
     self.progressTime = nil
     print("MPA-Progress: Progress tracking reset!")

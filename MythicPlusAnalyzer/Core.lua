@@ -5,9 +5,6 @@ MythicPlusAnalyzer.plugins = {}
 MythicPlusAnalyzer.testMode = false  -- Test mode flag
 MythicPlusAnalyzer.isTracking = false  -- Track if metrics are already being tracked
 
--- Combat tracking variables
-MythicPlusAnalyzer.inCombat = false
-MythicPlusAnalyzer.combatTimes = {}  -- List of combat start/stop pairs
 
 -- Register core events
 MythicPlusAnalyzer:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -58,9 +55,8 @@ end
 
 -- Reset tracking-specific variables (but not global state like testMode)
 function MythicPlusAnalyzer:ResetTrackingMetrics()
-    self.combatTimes = {}
-    
-    print("MPA-Core: Tracking data has been reset.")
+    -- Notify CoreSegments
+    CoreSegments:ResetCombatSegments()
 
     -- Notify plugins
     for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
@@ -99,9 +95,8 @@ end
 function MythicPlusAnalyzer.events:PLAYER_REGEN_DISABLED()
     if not MythicPlusAnalyzer.isTracking then return end  -- Don't track if not in a dungeon/test mode
 
-    MythicPlusAnalyzer.inCombat = true
-    table.insert(MythicPlusAnalyzer.combatTimes, {start = GetTime()})  -- Add a new combat entry with only start time
-    print("MPA-Core: Player entered combat!")
+    -- Notify CoreSegments
+    CoreSegments:SetCombatState(true)
 
     -- Notify plugins
     for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
@@ -113,15 +108,10 @@ end
 
 -- Handle player leaving combat
 function MythicPlusAnalyzer.events:PLAYER_REGEN_ENABLED()
-    if not MythicPlusAnalyzer.inCombat then return end  -- Ignore if combat wasn't started
+    if not CoreSegments:GetCombatState() then return end  -- Ignore if combat wasn't started
 
-    -- Add stop time to the last combat entry
-    MythicPlusAnalyzer.combatTimes[#MythicPlusAnalyzer.combatTimes].stop = GetTime()
-    
-    print("MPA-Core: Player left combat!")
-
-    -- Reset combat state
-    MythicPlusAnalyzer.inCombat = false
+    -- Notify CoreSegments
+    CoreSegments:SetCombatState(false)
 
     -- Notify plugins
     for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
@@ -139,20 +129,6 @@ function MythicPlusAnalyzer.events:COMBAT_LOG_EVENT_UNFILTERED()
     for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
         if plugin.OnCombatLogEvent then
             plugin:OnCombatLogEvent()
-        end
-    end
-end
-
--- Command to print stored total time
-SLASH_MYTHICPLUSANALYZER1 = "/mpaprint"
-SlashCmdList["MYTHICPLUSANALYZER"] = function()
-    print("MPA-Core Data:")
-    print("Combat Time Entries:")
-    for i, entry in ipairs(MythicPlusAnalyzer.combatTimes) do
-        if entry.stop then
-            print("Fight " .. i .. ": Start - " .. entry.start .. ", Stop - " .. entry.stop .. ", Duration - " .. (entry.stop - entry.start) .. " sec")
-        else
-            print("Fight " .. i .. ": Start - " .. entry.start .. " (still ongoing)")
         end
     end
 end
