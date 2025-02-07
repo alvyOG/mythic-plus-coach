@@ -1,50 +1,91 @@
--- Mythic Plus Analyzer Core Addon
-MythicPlusAnalyzer = CreateFrame("Frame")
-MythicPlusAnalyzer.events = {}
-MythicPlusAnalyzer.plugins = {}
-MythicPlusAnalyzer.testMode = false  -- Test mode flag
-MythicPlusAnalyzer.isTracking = false  -- Track if metrics are already being tracked
+-- MPA Core
+local AceAddon = LibStub("AceAddon-3.0")
+local AceEvent = LibStub("AceEvent-3.0")
 
+-- Initialize MPA as an AceAddon module
+MythicPlusAnalyzer = AceAddon:NewAddon("MythicPlusAnalyzer", "AceEvent-3.0")
 
--- Register core events
-MythicPlusAnalyzer:RegisterEvent("PLAYER_ENTERING_WORLD")
-MythicPlusAnalyzer:RegisterEvent("CHALLENGE_MODE_START")
-MythicPlusAnalyzer:RegisterEvent("CHALLENGE_MODE_COMPLETED")
-MythicPlusAnalyzer:RegisterEvent("PLAYER_LEAVING_WORLD")
-MythicPlusAnalyzer:RegisterEvent("PLAYER_REGEN_DISABLED")
-MythicPlusAnalyzer:RegisterEvent("PLAYER_REGEN_ENABLED")
-MythicPlusAnalyzer:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+-- Event handlers
+function MythicPlusAnalyzer:OnInitialize()
+    self.plugins = {}
+    self.testMode = false
+    self.isTracking = false
+    print("MPA-Core: Initialized")
+end
 
--- Event handler function
-MythicPlusAnalyzer:SetScript("OnEvent", function(self, event, ...)
-    if self.events[event] then
-        self.events[event](self, ...)
+function MythicPlusAnalyzer:OnEnable()
+    -- Register events
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("CHALLENGE_MODE_START")
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+    self:RegisterEvent("PLAYER_LEAVING_WORLD")
+    self:RegisterEvent("PLAYER_REGEN_DISABLED")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+end
+
+-- Event handlers
+function MythicPlusAnalyzer:CHALLENGE_MODE_START()
+    self:ResetTrackingMetrics()
+    self.isTracking = true
+    print("MPA-Core: Challenge Mode started! Tracking enabled.")
+end
+
+function MythicPlusAnalyzer:CHALLENGE_MODE_COMPLETED()
+    self.isTracking = false
+    print("MPA-Core: Challenge Mode completed! Tracking stopped.")
+end
+
+function MythicPlusAnalyzer:PLAYER_LEAVING_WORLD()
+    self.isTracking = false
+    print("MPA-Core: Player left the world. Tracking stopped.")
+end
+
+function MythicPlusAnalyzer:PLAYER_REGEN_DISABLED()
+    if not self.isTracking then return end
+    CoreSegments:SetCombatState(true)
+    for _, plugin in pairs(self.plugins) do
+        if plugin.OnCombatStart then 
+            plugin:OnCombatStart() 
+        end
     end
-end)
+end
 
-print("MPA-Core Core loaded!")
+function MythicPlusAnalyzer:PLAYER_REGEN_ENABLED()
+    if not CoreSegments:GetCombatState() then return end
+    CoreSegments:SetCombatState(false)
+    for _, plugin in pairs(self.plugins) do
+        if plugin.OnCombatEnd then 
+            plugin:OnCombatEnd() 
+        end
+    end
+end
 
--- Register plugin function
+function MythicPlusAnalyzer:COMBAT_LOG_EVENT_UNFILTERED()
+    if not self.isTracking then return end
+    for _, plugin in pairs(self.plugins) do
+        if plugin.OnCombatLogEvent then 
+            plugin:OnCombatLogEvent() 
+        end
+    end
+end
+
+-- Plugin Management
 function MythicPlusAnalyzer:RegisterPlugin(plugin)
     table.insert(self.plugins, plugin)
 end
 
--- Getter plugin function
 function MythicPlusAnalyzer:GetPlugin(pluginName)
     for _, plugin in pairs(self.plugins) do
-        if plugin.name == pluginName then
-            return plugin
-        end
+        if plugin.name == pluginName then return plugin end
     end
     print("MPA-Core: Plugin", pluginName, "not found.")
     return nil
 end
 
-
--- Function to toggle tracking
+-- Utility Commands
 function MythicPlusAnalyzer:ToggleTrackingState()
     self.isTracking = not self.isTracking
-    
     if self.isTracking then
         self:ResetTrackingMetrics()
         print("MPA-Core: Tracking ENABLED.")
@@ -53,107 +94,15 @@ function MythicPlusAnalyzer:ToggleTrackingState()
     end
 end
 
--- Reset tracking-specific variables (but not global state like testMode)
 function MythicPlusAnalyzer:ResetTrackingMetrics()
-    -- Notify CoreSegments
     CoreSegments:ResetCombatSegments()
-
-    -- Notify plugins
-    for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
-        if plugin.ResetTrackingMetrics then
-            plugin:ResetTrackingMetrics()
+    for _, plugin in pairs(self.plugins) do
+        if plugin.ResetTrackingMetrics then 
+            plugin:ResetTrackingMetrics() 
         end
     end
 end
 
--- Method to Enable/Disable Plugin
-function MythicPlusAnalyzer:SetPluginEnable(enable)
-    -- TODO: Implement this function
-    print("MPA-Core: SetPluginEnable() called")
-end
-
--- Start tracking when entering a Challenge Mode dungeon
-function MythicPlusAnalyzer.events:CHALLENGE_MODE_START()
-    MythicPlusAnalyzer:ResetTrackingMetrics()  -- Reset only relevant tracking variables
-    MythicPlusAnalyzer.isTracking = true
-    print("MPA-Core: Challenge Mode started! Tracking enabled.")
-end
-
--- Stop tracking when the dungeon is completed
-function MythicPlusAnalyzer.events:CHALLENGE_MODE_COMPLETED()
-    MythicPlusAnalyzer.isTracking = false
-    print("MPA-Core: Challenge Mode completed! Tracking stopped.")
-end
-
--- Stop tracking when leaving the world (e.g., logging out, leaving instance)
-function MythicPlusAnalyzer.events:PLAYER_LEAVING_WORLD()
-    MythicPlusAnalyzer.isTracking = false
-    print("MPA-Core: Player left the world. Tracking stopped.")
-end
-
--- Handle player entering combat
-function MythicPlusAnalyzer.events:PLAYER_REGEN_DISABLED()
-    if not MythicPlusAnalyzer.isTracking then return end  -- Don't track if not in a dungeon/test mode
-
-    -- Notify CoreSegments
-    CoreSegments:SetCombatState(true)
-
-    -- Notify plugins
-    for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
-        if plugin.OnCombatStart then
-            plugin:OnCombatStart()
-        end
-    end
-end
-
--- Handle player leaving combat
-function MythicPlusAnalyzer.events:PLAYER_REGEN_ENABLED()
-    if not CoreSegments:GetCombatState() then return end  -- Ignore if combat wasn't started
-
-    -- Notify CoreSegments
-    CoreSegments:SetCombatState(false)
-
-    -- Notify plugins
-    for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
-        if plugin.OnCombatEnd then
-            plugin:OnCombatEnd()
-        end
-    end
-end
-
--- Handle combat log event (delegated to plugins)
-function MythicPlusAnalyzer.events:COMBAT_LOG_EVENT_UNFILTERED()
-    if not MythicPlusAnalyzer.isTracking then return end  -- Ignore events if tracking is disabled
-
-    -- Dispatch the combat log event to all plugins
-    for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
-        if plugin.OnCombatLogEvent then
-            plugin:OnCombatLogEvent()
-        end
-    end
-end
-
--- Enable or disable test mode
-SLASH_MYTHICPLUSTEST1 = "/mpatest"
-SlashCmdList["MYTHICPLUSTEST"] = function()
-    local _, _, isInMythicPlus = C_ChallengeMode.GetActiveKeystoneInfo()
-
-    if isInMythicPlus then
-        print("MPA-Core: You are in an active Mythic+ dungeon. Test mode cannot be toggled.")
-        return
-    end
-
-    MythicPlusAnalyzer:ToggleTrackingState()
-
-    if MythicPlusAnalyzer.testMode then
-        print("MPA-Core: Test mode ENABLED. Tracking in all dungeons.")
-    else
-        print("MPA-Core: Test mode DISABLED. Tracking only in Mythic+.")
-    end
-end
-
--- Command to reset tracking metrics
-SLASH_MYTHICPLUSRESET1 = "/mpareset"
-SlashCmdList["MYTHICPLUSRESET"] = function()
-    MythicPlusAnalyzer:ResetTrackingMetrics()
-end
+-- Slash Commands
+MythicPlusAnalyzer:RegisterChatCommand("mpa test", "ToggleTrackingState")
+MythicPlusAnalyzer:RegisterChatCommand("mpa reset", "ResetTrackingMetrics")
