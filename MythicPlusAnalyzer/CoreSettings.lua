@@ -25,7 +25,7 @@ function CoreSettings:CreateSettingsWindow()
     self.settingsWindow = AceGUI:Create("Frame")
     self.settingsWindow:SetTitle("M+ Analyzer Settings")
     self.settingsWindow:SetLayout("Flow")
-    self.settingsWindow:SetWidth(400)
+    self.settingsWindow:SetWidth(450)
     self.settingsWindow:SetHeight(300)
 
     -- Create Tabs Group
@@ -61,6 +61,27 @@ function CoreSettings:CreateSettingsWindow()
     settingsTabs:SelectTab("General")
 end
 
+-- Function to Create Icon Buttons with Tooltip
+local function CreateIconButton(icon, tooltipText, width, onClick)
+    local button = AceGUI:Create("Icon")
+    button:SetImage(icon)
+    button:SetImageSize(36, 36)
+    button:SetWidth(width)
+    button:SetCallback("OnClick", function()
+        PlaySound(1115) -- UI button click sound
+        onClick()
+    end)
+    button:SetCallback("OnEnter", function(widget)
+        GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+        GameTooltip:SetText(tooltipText, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    button:SetCallback("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    return button
+end
+
 -- Create the General Tab
 function CoreSettings:CreateGeneralTab(container)
     local label = AceGUI:Create("Label")
@@ -79,10 +100,15 @@ function CoreSettings:CreateTrackingTab(container)
     end
 
     for index, tab in ipairs(self.trackingTabsOrder) do
+        local group = AceGUI:Create("SimpleGroup")
+        group:SetFullWidth(true)
+        group:SetLayout("Flow")
+
         local pluginLabel = AceGUI:Create("Label")
         pluginLabel:SetText(tab.value)
+        pluginLabel:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
         pluginLabel:SetWidth(120)
-        container:AddChild(pluginLabel)
+        group:AddChild(pluginLabel)
 
         local enableButton = AceGUI:Create("Button")
         enableButton:SetText("Enable")
@@ -90,7 +116,7 @@ function CoreSettings:CreateTrackingTab(container)
         enableButton:SetCallback("OnClick", function()
             MythicPlusAnalyzer:SetPluginEnable(tab.value, true)
         end)
-        container:AddChild(enableButton)
+        group:AddChild(enableButton)
 
         local disableButton = AceGUI:Create("Button")
         disableButton:SetText("Disable")
@@ -98,29 +124,31 @@ function CoreSettings:CreateTrackingTab(container)
         disableButton:SetCallback("OnClick", function()
             MythicPlusAnalyzer:SetPluginEnable(tab.value, false)
         end)
-        container:AddChild(disableButton)
+        group:AddChild(disableButton)
 
-        local upButton = AceGUI:Create("Button")
-        upButton:SetText("+")
-        upButton:SetWidth(30)
-        upButton:SetCallback("OnClick", function()
+        local upButton = CreateIconButton("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up",
+                "Move Up", 36, function()
             if index > 1 then
-                self.trackingTabsOrder[index], self.trackingTabsOrder[index - 1] = self.trackingTabsOrder[index - 1], self.trackingTabsOrder[index]
+                self.trackingTabsOrder[index], self.trackingTabsOrder[index - 1] =
+                    self.trackingTabsOrder[index - 1], self.trackingTabsOrder[index]
+                container:ReleaseChildren()
                 self:CreateTrackingTab(container)
             end
         end)
-        container:AddChild(upButton)
+        group:AddChild(upButton)
 
-        local downButton = AceGUI:Create("Button")
-        downButton:SetText("-")
-        downButton:SetWidth(30)
-        downButton:SetCallback("OnClick", function()
+        local downButton = CreateIconButton("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up",
+                "Move Down", 36, function()
             if index < #self.trackingTabsOrder then
-                self.trackingTabsOrder[index], self.trackingTabsOrder[index + 1] = self.trackingTabsOrder[index + 1], self.trackingTabsOrder[index]
+                self.trackingTabsOrder[index], self.trackingTabsOrder[index + 1] =
+                    self.trackingTabsOrder[index + 1], self.trackingTabsOrder[index]
+                container:ReleaseChildren()
                 self:CreateTrackingTab(container)
             end
         end)
-        container:AddChild(downButton)
+        group:AddChild(downButton)
+
+        container:AddChild(group)
     end
 end
 

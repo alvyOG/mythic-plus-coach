@@ -78,7 +78,7 @@ CoreWindow.trackButton = nil
 local function CreateIconButton(icon, tooltipText, width, onClick)
     local button = AceGUI:Create("Icon")
     button:SetImage(icon)
-    button:SetImageSize(16, 16)
+    button:SetImageSize(24, 24)
     button:SetWidth(width)
     button:SetCallback("OnClick", onClick)
     button:SetCallback("OnEnter", function(widget)
@@ -112,7 +112,8 @@ titleLabel:SetWidth(130)
 topBar:AddChild(titleLabel)
 
 -- Start/Stop Button (Play ▶️ / Stop ⏹️)
-CoreWindow.trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up", "Start", 24, function()
+CoreWindow.trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up",
+        "Start", 24, function()
     MythicPlusAnalyzer:ToggleTrackingState()
     if MythicPlusAnalyzer.isTracking then
         CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
@@ -133,19 +134,22 @@ end)
 topBar:AddChild(CoreWindow.trackButton)
 
 -- Reset Button (Undo Arrow ♻️)
-local resetButton = CreateIconButton("Interface\\Buttons\\UI-RefreshButton", "Reset", 24, function()
+local resetButton = CreateIconButton("Interface\\Buttons\\UI-RefreshButton",
+        "Reset", 24, function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end)
 topBar:AddChild(resetButton)
 
 -- Settings Button (Gear ⚙️)
-local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon", "Settings", 24, function()
+local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon",
+        "Settings", 24, function()
     CoreSettings:Show()
 end)
 topBar:AddChild(settingsButton)
 
 -- Close Button (X ❌)
-local closeButton = CreateIconButton("Interface\\Buttons\\UI-Panel-MinimizeButton-Up", "Close", 24, function()
+local closeButton = CreateIconButton("Interface\\Buttons\\UI-Panel-MinimizeButton-Up",
+        "Close", 24, function()
     CoreWindow:Hide()
 end)
 topBar:AddChild(closeButton)
