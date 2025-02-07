@@ -28,6 +28,16 @@ function CoreSettings:CreateSettingsWindow()
     self.settingsWindow:SetWidth(450)
     self.settingsWindow:SetHeight(300)
 
+    -- Set OnClose callback to show CoreWindow
+    self.settingsWindow:SetCallback("OnClose", function(widget)
+        CoreSettings:Hide() -- Ensure cleanup
+        if CoreWindow and CoreWindow.Show then
+            CoreWindow:Show()
+        else
+            print("CoreWindow is not initialized or does not have a Show method.")
+        end
+    end)
+
     -- Create Tabs Group
     local settingsTabs = AceGUI:Create("TabGroup")
     settingsTabs:SetLayout("Flow")
