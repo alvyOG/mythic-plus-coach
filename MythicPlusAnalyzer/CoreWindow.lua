@@ -144,6 +144,7 @@ topBar:AddChild(resetButton)
 local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon",
         "Settings", 24, function()
     CoreSettings:Show()
+    CoreWindow:Hide()
 end)
 topBar:AddChild(settingsButton)
 
@@ -154,11 +155,16 @@ local closeButton = CreateIconButton("Interface\\Buttons\\UI-Panel-MinimizeButto
 end)
 topBar:AddChild(closeButton)
 
--- Core Main Content
-local coreContent = AceGUI:Create("TabGroup")
-coreContent:SetFullWidth(true)
-coreContent:SetLayout("Flow")
-CoreWindow:AddChild(coreContent)
+-- Create a container for tab content
+local tabContainer = AceGUI:Create("SimpleGroup")
+tabContainer:SetFullWidth(true)
+tabContainer:SetFullHeight(true)
+tabContainer:SetLayout("Flow")
+
+-- Core Tab Content
+local coreTabs = AceGUI:Create("TabGroup")
+coreTabs:SetFullWidth(true)
+coreTabs:SetLayout("Flow")
 
 -- Populate tabs dynamically from plugins
 local tabList = {}
@@ -167,20 +173,23 @@ for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
         table.insert(tabList, { text = plugin.name, value = plugin.name })
     end
 end
-coreContent:SetTabs(tabList)
+coreTabs:SetTabs(tabList)
 
 -- Handle tab selection and load plugin content
-coreContent:SetCallback("OnGroupSelected", function(container, _, tabName)
-    container:ReleaseChildren() -- Clear previous content
+coreTabs:SetCallback("OnGroupSelected", function(_, _, tabName)
+    tabContainer:ReleaseChildren() -- Clear previous content
     local plugin = MythicPlusAnalyzer:GetPlugin(tabName)
     if plugin and plugin.GetContent then
-        container:AddChild(plugin:GetContent())
+        tabContainer:AddChild(plugin:GetContent())
     end
 end)
 
+coreContent:AddChild(tabContainer)
+CoreWindow:AddChild(coreTabs)
+
 -- Set default tab if available
 if #tabList > 0 then
-    coreContent:SelectTab(tabList[1].value)
+    coreTabs:SelectTab(tabList[1].value)
 end
 
 -- Slash Command to Toggle GUI
