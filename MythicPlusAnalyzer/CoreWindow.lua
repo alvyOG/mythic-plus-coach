@@ -7,24 +7,6 @@ CoreWindow:SetLayout("List")
 CoreWindow:Hide()  -- Start hidden
 CoreWindow.trackButton = nil
 
--- Function to Create Icon Buttons with Tooltip
-local function CreateIconButton(icon, tooltipText, width, onClick)
-    local button = AceGUI:Create("Icon")
-    button:SetImage(icon)
-    button:SetImageSize(24, 24)
-    button:SetWidth(width)
-    button:SetCallback("OnClick", onClick)
-    button:SetCallback("OnEnter", function(widget)
-        GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText(tooltipText, 1, 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    button:SetCallback("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-    return button
-end
-
 -- Function to update tabs
 function CoreWindow:UpdateTabs(tabOrder)
     -- TODO: Implement this function
@@ -45,45 +27,49 @@ titleLabel:SetWidth(130)
 topBar:AddChild(titleLabel)
 
 -- Start/Stop Button (Play ▶️ / Stop ⏹️)
-CoreWindow.trackButton = CreateIconButton("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up",
-        "Start", 24, function()
+CoreWindow.trackButton = AceGUI:Create("Icon-MPA")
+CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
+CoreWindow.trackButton:SetTooltip("Start")
+CoreWindow.trackButton:SetWidth(24)
+CoreWindow.trackButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ToggleTrackingState()
     if MythicPlusAnalyzer.isTracking then
         CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
-        CoreWindow.trackButton:SetCallback("OnEnter", function(widget)
-            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
-            GameTooltip:SetText("Start", 1, 1, 1, 1, true)
-            GameTooltip:Show()
-        end)
+        CoreWindow.trackButton:SetTooltip("Stop")
     else
         CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
-        CoreWindow.trackButton:SetCallback("OnEnter", function(widget)
-            GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
-            GameTooltip:SetText("Stop", 1, 1, 1, 1, true)
-            GameTooltip:Show()
-        end)
+        CoreWindow.trackButton:SetTooltip("Start")
     end
 end)
 topBar:AddChild(CoreWindow.trackButton)
 
 -- Reset Button (Undo Arrow ♻️)
-local resetButton = CreateIconButton("Interface\\Buttons\\UI-RefreshButton",
-        "Reset", 24, function()
+local resetButton = AceGUI:Create("Icon-MPA")
+resetButton:SetImage("Interface\\Buttons\\UI-RefreshButton")
+resetButton:SetTooltip("Reset")
+resetButton:SetWidth(24)
+resetButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end)
 topBar:AddChild(resetButton)
 
 -- Settings Button (Gear ⚙️)
-local settingsButton = CreateIconButton("Interface\\GossipFrame\\BinderGossipIcon",
-        "Settings", 24, function()
+local settingsButton = AceGUI:Create("Icon-MPA")
+settingsButton:SetImage("Interface\\GossipFrame\\BinderGossipIcon")
+settingsButton:SetTooltip("Settings")
+settingsButton:SetWidth(24)
+settingsButton:SetCallback("OnClick", function()
     CoreSettings:Show()
     CoreWindow:Hide()
 end)
 topBar:AddChild(settingsButton)
 
 -- Close Button (X ❌)
-local closeButton = CreateIconButton("Interface\\Buttons\\UI-Panel-MinimizeButton-Up",
-        "Close", 24, function()
+local closeButton = AceGUI:Create("Icon-MPA")
+closeButton:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+closeButton:SetTooltip("Close")
+closeButton:SetWidth(24)
+closeButton:SetCallback("OnClick", function()
     CoreWindow:Hide()
 end)
 topBar:AddChild(closeButton)
@@ -117,7 +103,7 @@ coreTabs:SetCallback("OnGroupSelected", function(_, _, tabName)
     end
 end)
 
-coreContent:AddChild(tabContainer)
+coreTabs:AddChild(tabContainer)
 CoreWindow:AddChild(coreTabs)
 
 -- Set default tab if available
@@ -126,13 +112,6 @@ if #tabList > 0 then
 end
 
 -- Slash Command to Toggle GUI
-SLASH_MPACOREFRAME1 = "/mpa"
-SlashCmdList["MPACOREFRAME"] = function()
-    if CoreWindow:IsVisible() then
-        CoreWindow:Hide()
-    else
-        CoreWindow:Show()
-    end
-end
+Core:RegisterChatCommand("mpa", "ToggleCoreWindow")
 
 print("MPA-Core Window: Loaded successfully")
