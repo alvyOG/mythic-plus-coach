@@ -71,27 +71,6 @@ function CoreSettings:CreateSettingsWindow()
     settingsTabs:SelectTab("General")
 end
 
--- Function to Create Icon Buttons with Tooltip
-local function CreateIconButton(icon, tooltipText, width, onClick)
-    local button = AceGUI:Create("Icon")
-    button:SetImage(icon)
-    button:SetImageSize(36, 36)
-    button:SetWidth(width)
-    button:SetCallback("OnClick", function()
-        PlaySound(1115) -- UI button click sound
-        onClick()
-    end)
-    button:SetCallback("OnEnter", function(widget)
-        GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText(tooltipText, 1, 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    button:SetCallback("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-    return button
-end
-
 -- Create the General Tab
 function CoreSettings:CreateGeneralTab(container)
     local label = AceGUI:Create("Label")
@@ -136,8 +115,12 @@ function CoreSettings:CreateTrackingTab(container)
         end)
         group:AddChild(disableButton)
 
-        local upButton = CreateIconButton("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up",
-                "Move Up", 36, function()
+        -- Create Up Button
+        local upButton = AceGUI:Create("IconButton-MPA")
+        upButton:SetImage("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up")
+        upButton:SetTooltip("Move Up")
+        upButton:SetWidth(36)
+        upButton:SetCallback("OnClick", function()
             if index > 1 then
                 self.trackingTabsOrder[index], self.trackingTabsOrder[index - 1] =
                     self.trackingTabsOrder[index - 1], self.trackingTabsOrder[index]
@@ -147,8 +130,12 @@ function CoreSettings:CreateTrackingTab(container)
         end)
         group:AddChild(upButton)
 
-        local downButton = CreateIconButton("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up",
-                "Move Down", 36, function()
+        -- Create Down Button
+        local downButton = AceGUI:Create("IconButton-MPA")
+        downButton:SetImage("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up")
+        downButton:SetTooltip("Move Down")
+        downButton:SetWidth(36)
+        downButton:SetCallback("OnClick", function()
             if index < #self.trackingTabsOrder then
                 self.trackingTabsOrder[index], self.trackingTabsOrder[index + 1] =
                     self.trackingTabsOrder[index + 1], self.trackingTabsOrder[index]
@@ -168,16 +155,13 @@ function CoreSettings:ResetSettings()
     self.trackingTabsOrder = {}
 end
 
--- Open Settings Command
-SLASH_MPASETTINGS1 = "/mpas"
-SlashCmdList["MPASETTINGS"] = function()
+-- Register slash commands directly via MythicPlusAnalyzer
+MythicPlusAnalyzer:RegisterChatCommand("mpa settings", function()
     CoreSettings:Show()
-end
+end)
 
--- Reset Settings Command
-SLASH_MPARESETSETTINGS1 = "/mpasreset"
-SlashCmdList["MPASETTINGSRESET"] = function()
+MythicPlusAnalyzer:RegisterChatCommand("mpa settings reset", function()
     CoreSettings:ResetSettings()
-end
+end)
 
 print("MPA-CoreSettings: Loaded successfully")
