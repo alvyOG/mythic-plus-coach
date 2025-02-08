@@ -1,62 +1,110 @@
--- MPA Custom Icon
+-- MPA Custom Icon Button
 local AceGUI = LibStub("AceGUI-3.0")
 
 local Type, Version = "IconButton-MPA", 1
 
-local function SetImage(self, icon)
-    self.icon:SetTexture(icon)
+--[[-----------------------------------------------------------------------------
+Scripts
+-------------------------------------------------------------------------------]]
+local function Control_OnEnter(frame)
+    frame.obj:Fire("OnEnter")
 end
 
-local function SetImageSize(self, width, height)
-    self.icon:SetSize(width, height)
+local function Control_OnLeave(frame)
+    frame.obj:Fire("OnLeave")
 end
 
-local function SetTooltip(self, tooltipText)
-    self.tooltipText = tooltipText
+local function Button_OnClick(frame, button)
+    frame.obj:Fire("OnClick", button)
+    AceGUI:ClearFocus()
 end
 
-local function OnAcquire(self)
-    self:SetWidth(36)
-    self:SetHeight(36)
-end
+--[[-----------------------------------------------------------------------------
+Methods
+-------------------------------------------------------------------------------]]
+local methods = {
+    ["OnAcquire"] = function(self)
+        self:SetHeight(24)
+        self:SetWidth(24)
+        self:SetImage(nil)
+        self:SetTooltip(nil)
+        self:SetDisabled(false)
+    end,
 
-local function OnRelease(self)
-    self.icon:Hide()
-end
+    ["OnRelease"] = function(self)
+        self.icon:Hide()
+    end,
 
-local function Hide(self)
-    self.frame:Hide()
-end
+    ["SetImage"] = function(self, icon)
+        self.icon:SetTexture(icon)
+        self.icon:Show()
+    end,
 
-local function Show(self)
-    self.frame:Show()
-end
+    ["SetImageSize"] = function(self, width, height)
+        self.icon:SetSize(width, height)
+    end,
 
+    ["SetTooltip"] = function(self, tooltipText)
+        self.tooltipText = tooltipText
+    end,
+
+    ["SetSize"] = function(self, width, height)
+        self.frame:SetSize(width, height)
+    end,
+
+    ["SetCallback"] = function(self, event, callback)
+        if event == "OnClick" then
+            self.frame:SetScript("OnMouseUp", callback)
+        else
+            self.frame:SetScript(event, callback)
+        end
+    end,
+
+    ["SetDisabled"] = function(self, disabled)
+        self.disabled = disabled
+        if disabled then
+            self.frame:Disable()
+            self.icon:SetVertexColor(0.5, 0.5, 0.5, 0.5)
+        else
+            self.frame:Enable()
+            self.icon:SetVertexColor(1, 1, 1, 1)
+        end
+    end,
+
+    ["Hide"] = function(self)
+        self.frame:Hide()
+    end,
+
+    ["Show"] = function(self)
+        self.frame:Show()
+    end
+}
+
+--[[-----------------------------------------------------------------------------
+Constructor
+-------------------------------------------------------------------------------]]
 local function Constructor()
-    -- Create the icon frame (using "Icon" for static image display)
-    local frame = CreateFrame("Frame", nil, UIParent)
-    frame:SetSize(36, 36)
-    
-    -- Create the icon texture
+    local frame = CreateFrame("Button", nil, UIParent)
+    frame:Hide()
+
+    frame:EnableMouse(true)
+    frame:SetScript("OnEnter", Control_OnEnter)
+    frame:SetScript("OnLeave", Control_OnLeave)
+    frame:SetScript("OnMouseUp", Button_OnClick)
+
     local icon = frame:CreateTexture(nil, "BACKGROUND")
     icon:SetAllPoints(frame)
 
-    -- Set up the widget structure
     local widget = {
         frame = frame,
-        icon = icon,  -- Icon texture
-        type = Type,
-        SetImage = SetImage,
-        SetImageSize = SetImageSize,
-        SetTooltip = SetTooltip,
-        OnAcquire = OnAcquire,
-        OnRelease = OnRelease,
-        Hide = Hide,
-        Show = Show,
+        icon = icon,
+        type = Type
     }
+    for method, func in pairs(methods) do
+        widget[method] = func
+    end
 
-    -- Tooltip functionality
-    frame:SetScript("OnEnter", function(widget)
+    frame:SetScript("OnEnter", function()
         if widget.tooltipText then
             GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
             GameTooltip:SetText(widget.tooltipText, 1, 1, 1, 1, true)
@@ -68,9 +116,7 @@ local function Constructor()
         GameTooltip:Hide()
     end)
 
-    -- Register the widget as an AceGUI widget
-    AceGUI:RegisterWidgetType(Type, Constructor, Version)
-    return widget
+    return AceGUI:RegisterAsWidget(widget)
 end
 
 AceGUI:RegisterWidgetType(Type, Constructor, Version)

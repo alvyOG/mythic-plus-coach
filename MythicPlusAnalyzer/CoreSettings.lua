@@ -22,26 +22,20 @@ end
 
 -- Create the Settings Window
 function CoreSettings:CreateSettingsWindow()
-    self.settingsWindow = AceGUI:Create("Frame")
-    self.settingsWindow:SetTitle("M+ Analyzer Settings")
+    self.settingsWindow = AceGUI:Create("Window-MPA")
     self.settingsWindow:SetLayout("Flow")
     self.settingsWindow:SetWidth(450)
     self.settingsWindow:SetHeight(300)
 
-    -- Set OnClose callback to show CoreWindow
-    self.settingsWindow:SetCallback("OnClose", function(widget)
-        CoreSettings:Hide() -- Ensure cleanup
-        if CoreWindow and CoreWindow.Show then
-            CoreWindow:Show()
-        else
-            print("CoreWindow is not initialized or does not have a Show method.")
-        end
-    end)
+    self.settingsWindow:SetTitle("|cffffcc00M+ Analyzer Settings|r")
+    self.settingsWindow:SetTitleFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+    self.settingsWindow:SetTitleAlignment("CENTER")
 
     -- Create Tabs Group
     local settingsTabs = AceGUI:Create("TabGroup")
     settingsTabs:SetLayout("Flow")
     settingsTabs:SetFullWidth(true)
+    settingsTabs:SetFullHeight(true)
     settingsTabs:SetTabs({
         { text = "General", value = "General" },
         { text = "Tracking", value = "Tracking" }
@@ -50,7 +44,6 @@ function CoreSettings:CreateSettingsWindow()
     -- Create a container for tab content
     local tabContainer = AceGUI:Create("SimpleGroup")
     tabContainer:SetFullWidth(true)
-    tabContainer:SetFullHeight(true)
     tabContainer:SetLayout("Flow")
 
     -- Handle tab selection
@@ -64,8 +57,8 @@ function CoreSettings:CreateSettingsWindow()
     end)
 
     -- Add components in the correct order
+    settingsTabs:AddChild(tabContainer)
     self.settingsWindow:AddChild(settingsTabs)
-    self.settingsWindow:AddChild(tabContainer)
 
     -- Set default tab
     settingsTabs:SelectTab("General")
@@ -120,6 +113,7 @@ function CoreSettings:CreateTrackingTab(container)
         upButton:SetImage("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up")
         upButton:SetTooltip("Move Up")
         upButton:SetWidth(36)
+        upButton:SetHeight(36)
         upButton:SetCallback("OnClick", function()
             if index > 1 then
                 self.trackingTabsOrder[index], self.trackingTabsOrder[index - 1] =
@@ -135,6 +129,7 @@ function CoreSettings:CreateTrackingTab(container)
         downButton:SetImage("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up")
         downButton:SetTooltip("Move Down")
         downButton:SetWidth(36)
+        downButton:SetHeight(36)
         downButton:SetCallback("OnClick", function()
             if index < #self.trackingTabsOrder then
                 self.trackingTabsOrder[index], self.trackingTabsOrder[index + 1] =

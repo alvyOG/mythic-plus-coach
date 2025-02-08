@@ -11,16 +11,18 @@ Libs/Ace3/AceAddon-3.0/AceAddon-3.0.lua
 Libs/Ace3/AceEvent-3.0/AceEvent-3.0.lua
 Libs/Ace3/AceConsole-3.0/AceConsole-3.0.lua
 Libs/Ace3/AceTimer-3.0/AceTimer-3.0.lua
-Libs/Ace3-MPA/AceGUI-Window-MPA.lua
 Libs/Ace3-MPA/AceGUI-IconButton-MPA.lua
+Libs/Ace3-MPA/AceGUI-Window-MPA.lua
 
-# Core Files
+# Core
 Core.lua
 CoreSegments.lua
-CoreWindow.lua
-CoreSettings.lua
 
 # Plugins
 Plugins/ProgressPlugin.lua
 Plugins/DamagePlugin.lua
 Plugins/HealingPlugin.lua
+
+# Core GUI
+CoreWindow.lua
+CoreSettings.lua

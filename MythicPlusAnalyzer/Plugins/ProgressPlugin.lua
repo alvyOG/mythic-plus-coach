@@ -1,4 +1,6 @@
 -- MPA ProgressPlugin
+local AceGUI = LibStub("AceGUI-3.0")
+
 local ProgressPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
 ProgressPlugin.name = "ProgressPlugin"
 ProgressPlugin.events = {}

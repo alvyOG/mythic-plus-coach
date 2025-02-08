@@ -7,72 +7,53 @@ CoreWindow:SetLayout("List")
 CoreWindow:Hide()  -- Start hidden
 CoreWindow.trackButton = nil
 
+-- Set Core Window Title
+CoreWindow:SetTitle("|cffffcc00M+ Analyzer|r")
+CoreWindow:SetTitleFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+CoreWindow:SetTitleAlignment("LEFT")
+
 -- Function to update tabs
 function CoreWindow:UpdateTabs(tabOrder)
     -- TODO: Implement this function
     print("MPA-Core Window: UpdateTabs() called")
 end
 
--- Top Bar (Title + Buttons)
-local topBar = AceGUI:Create("SimpleGroup")
-topBar:SetFullWidth(true)
-topBar:SetLayout("Flow")
-CoreWindow:AddChild(topBar)
-
--- Title Label
-local titleLabel = AceGUI:Create("Label")
-titleLabel:SetText("|cffffcc00M+ Analyzer|r")
-titleLabel:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
-titleLabel:SetWidth(130)
-topBar:AddChild(titleLabel)
-
--- Start/Stop Button (Play ▶️ / Stop ⏹️)
-CoreWindow.trackButton = AceGUI:Create("IconButton-MPA")
-CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
-CoreWindow.trackButton:SetTooltip("Start")
-CoreWindow.trackButton:SetWidth(24)
-CoreWindow.trackButton:SetCallback("OnClick", function()
-    MythicPlusAnalyzer:ToggleTrackingState()
-    if MythicPlusAnalyzer.isTracking then
-        CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-StopButton")
-        CoreWindow.trackButton:SetTooltip("Stop")
-    else
-        CoreWindow.trackButton:SetImage("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
-        CoreWindow.trackButton:SetTooltip("Start")
-    end
+-- Settings Button (Gear ⚙️)
+local settingsButton = AceGUI:Create("IconButton-MPA")
+settingsButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Gear.tga")
+settingsButton:SetTooltip("Settings")
+settingsButton:SetSize(18, 18)  -- Use SetSize instead of SetWidth
+settingsButton:SetCallback("OnClick", function()
+    CoreSettings:Show()
 end)
-topBar:AddChild(CoreWindow.trackButton)
+CoreWindow:AddButton(settingsButton)  -- Add to button bar
 
 -- Reset Button (Undo Arrow ♻️)
 local resetButton = AceGUI:Create("IconButton-MPA")
-resetButton:SetImage("Interface\\Buttons\\UI-RefreshButton")
+resetButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Reset.tga")
 resetButton:SetTooltip("Reset")
-resetButton:SetWidth(24)
+resetButton:SetSize(18, 18)  -- Use SetSize instead of SetWidth
 resetButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end)
-topBar:AddChild(resetButton)
+CoreWindow:AddButton(resetButton)  -- Add to button bar
 
--- Settings Button (Gear ⚙️)
-local settingsButton = AceGUI:Create("IconButton-MPA")
-settingsButton:SetImage("Interface\\GossipFrame\\BinderGossipIcon")
-settingsButton:SetTooltip("Settings")
-settingsButton:SetWidth(24)
-settingsButton:SetCallback("OnClick", function()
-    CoreSettings:Show()
-    CoreWindow:Hide()
+-- Start/Stop Button (Play ▶️ / Stop ⏹️)
+CoreWindow.trackButton = AceGUI:Create("IconButton-MPA")
+CoreWindow.trackButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Play.tga")
+CoreWindow.trackButton:SetTooltip("Start")
+CoreWindow.trackButton:SetSize(16, 16)  -- Use SetSize instead of SetWidth
+CoreWindow.trackButton:SetCallback("OnClick", function()
+    MythicPlusAnalyzer:ToggleTrackingState()
+    if MythicPlusAnalyzer.isTracking then
+        CoreWindow.trackButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Stop.tga")
+        CoreWindow.trackButton:SetTooltip("Stop")
+    else
+        CoreWindow.trackButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Play.tga")
+        CoreWindow.trackButton:SetTooltip("Start")
+    end
 end)
-topBar:AddChild(settingsButton)
-
--- Close Button (X ❌)
-local closeButton = AceGUI:Create("IconButton-MPA")
-closeButton:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-closeButton:SetTooltip("Close")
-closeButton:SetWidth(24)
-closeButton:SetCallback("OnClick", function()
-    CoreWindow:Hide()
-end)
-topBar:AddChild(closeButton)
+CoreWindow:AddButton(CoreWindow.trackButton)  -- Add to button bar
 
 -- Create a container for tab content
 local tabContainer = AceGUI:Create("SimpleGroup")
@@ -83,6 +64,7 @@ tabContainer:SetLayout("Flow")
 -- Core Tab Content
 local coreTabs = AceGUI:Create("TabGroup")
 coreTabs:SetFullWidth(true)
+coreTabs:SetFullHeight(true)
 coreTabs:SetLayout("Flow")
 
 -- Populate tabs dynamically from plugins
@@ -110,8 +92,5 @@ CoreWindow:AddChild(coreTabs)
 if #tabList > 0 then
     coreTabs:SelectTab(tabList[1].value)
 end
-
--- Slash Command to Toggle GUI
-Core:RegisterChatCommand("mpa", "ToggleCoreWindow")
 
 print("MPA-Core Window: Loaded successfully")
