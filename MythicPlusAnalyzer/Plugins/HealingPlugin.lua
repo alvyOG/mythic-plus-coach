@@ -1,25 +1,39 @@
--- MPA HealingPlugin
-local HealingPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: HealingPlugin.lua
+-- Description: Healing tracking functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
+local AceGUI = LibStub("AceGUI-3.0")
+
+-- Create a frame for the plugin
+local HealingPlugin = CreateFrame("Frame")
 HealingPlugin.name = "HealingPlugin"
 HealingPlugin.events = {}
-HealingPlugin.healingSegments = {}  -- List to store combat slices with Healing data
+HealingPlugin.healingSegments = {}  -- List to store combat slices with healing data
 
--- Reset tracking metrics
+--- Description: Reset tracking metrics.
+--- @param:
+--- @return:
 function HealingPlugin:ResetTrackingMetrics()
     self.healingSegments = {}  -- Reset the healing slices
     print("MPA-Healing: Healing tracking reset!")
 end
 
--- Track Healing events
+--- Description: Track healing events.
+--- @param:
+--- @return:
 function HealingPlugin:OnCombatLogEvent()
     local _, subevent, _, sourceGUID, _, _, _, _, _ = CombatLogGetCurrentEventInfo()
     local spellID, spellName, amount
 
-    -- Check if the source is the player and if the event is SPELL_HEALING
+    -- Check if the source is the player and if the event is SPELL_HEAL
     if sourceGUID == UnitGUID("player") and subevent == "SPELL_HEAL" then
         spellID, spellName, _, amount, _, _, _, _, _, _ = select(12, CombatLogGetCurrentEventInfo())
 
-        print("MPA-Healing: SPELL_HEALING subevent: ", spellName, spellID, amount)
+        print("MPA-Healing: SPELL_HEAL subevent: ", spellName, spellID, amount)
 
         -- Find the current combat slice
         local currentSlice = CoreSegments.combatSegments[#CoreSegments.combatSegments]
@@ -33,9 +47,9 @@ function HealingPlugin:OnCombatLogEvent()
                 self.healingSegments[sliceIndex] = healingData
             end
 
-            -- Track Healing per spell in the current slice
+            -- Track healing per spell in the current slice
             if not healingData[spellID] then
-                healingData[spellID] = amount  -- Initialize with the first Healing amount
+                healingData[spellID] = amount  -- Initialize with the first healing amount
             else
                 healingData[spellID] = healingData[spellID] + amount
             end
@@ -43,22 +57,28 @@ function HealingPlugin:OnCombatLogEvent()
     end
 end
 
--- Start a new Healing slice when combat starts
+--- Description: Start a new healing slice when combat starts.
+--- @param:
+--- @return:
 function HealingPlugin:OnCombatStart()
     table.insert(self.healingSegments, {})
     print("MPA-Healing: Combat started!")
 end
 
--- Handle combat end, just print the associated message
+--- Description: Handle combat end, just print the associated message.
+--- @param:
+--- @return:
 function HealingPlugin:OnCombatEnd()
     print("MPA-Healing: Combat ended!")
 end
 
--- Print Healing Metrics
+--- Description: Print healing metrics.
+--- @param:
+--- @return:
 function HealingPlugin:PrintHealingMetrics()
     print("MPA-Healing: Healing Metrics Summary")
 
-    -- Calculate total Healing and the total duration of all combat slices
+    -- Calculate total healing and the total duration of all combat slices
     local totalHealing = 0
     for _, slice in ipairs(self.healingSegments) do
         for _, healing in pairs(slice) do
@@ -77,7 +97,7 @@ function HealingPlugin:PrintHealingMetrics()
     print("MPA-Healing: Total Healing: " .. totalHealing)
     print("MPA-Healing: Average HPS: " .. avgHPS)
 
-    -- Print Healing per Spell for each slice and calculate slice-specific HPS
+    -- Print healing per spell for each slice and calculate slice-specific HPS
     for sliceIndex, slice in ipairs(self.healingSegments) do
         local sliceHealing = 0
         local sliceCombatTime = CoreSegments.combatSegments[sliceIndex].stop - CoreSegments.combatSegments[sliceIndex].start
@@ -93,7 +113,7 @@ function HealingPlugin:PrintHealingMetrics()
         print("MPA-Healing:   Slice Total Healing: " .. sliceHealing)
         print("MPA-Healing:   Slice HPS: " .. sliceHPS)
 
-        -- Print Healing per Spell for the slice
+        -- Print healing per spell for the slice
         for spellID, healing in pairs(slice) do
             local spellName = C_Spell.GetSpellName(spellID)
             local spellHPS = healing / sliceCombatTime
@@ -102,19 +122,30 @@ function HealingPlugin:PrintHealingMetrics()
     end
 end
 
--- Command to print Healing metrics
-SLASH_HEALINGPLUGINPRINT1 = "/mpahprint"
-SlashCmdList["HEALINGPLUGINPRINT"] = function()
+--- Description: Command to print healing metrics.
+--- @param:
+--- @return:
+function HealingPlugin:PrintHealingMetricsCommand()
     HealingPlugin:PrintHealingMetrics()
 end
 
--- Command to reset Healing metrics
-SLASH_HEALINGPLUGINRESET1 = "/mpahreset"
-SlashCmdList["HEALINGPLUGINRESET"] = function()
+--- Description: Command to reset healing metrics.
+--- @param:
+--- @return:
+function HealingPlugin:ResetHealingMetricsCommand()
     HealingPlugin:ResetTrackingMetrics()
 end
 
 -- Register the plugin with the Core module
 MythicPlusAnalyzer:RegisterPlugin(HealingPlugin)
+
+-- Register slash commands
+MythicPlusAnalyzer:RegisterChatCommand("mpa-healing-print", function()
+    HealingPlugin:PrintHealingMetricsCommand()
+end)
+
+MythicPlusAnalyzer:RegisterChatCommand("mpa-healing-reset", function()
+    HealingPlugin:ResetHealingMetricsCommand()
+end)
 
 print("MPA-Healing: Healing Plugin loaded!")

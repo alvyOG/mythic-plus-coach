@@ -1,28 +1,45 @@
--- MPA Custom Icon Button
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: AceGUI-IconButton-MPA.lua
+-- Description: Custom Icon Button for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
 local AceGUI = LibStub("AceGUI-3.0")
 
+-- Constants
 local Type, Version = "IconButton-MPA", 1
 
---[[-----------------------------------------------------------------------------
-Scripts
--------------------------------------------------------------------------------]]
+-- Scripts
+--- Description: Handles the OnEnter event for the control.
+--- @param: frame - The frame triggering the event.
+--- @return:
 local function Control_OnEnter(frame)
     frame.obj:Fire("OnEnter")
 end
 
+--- Description: Handles the OnLeave event for the control.
+--- @param: frame - The frame triggering the event.
+--- @return:
 local function Control_OnLeave(frame)
     frame.obj:Fire("OnLeave")
 end
 
+--- Description: Handles the OnClick event for the button.
+--- @param: frame - The frame triggering the event.
+--- @param: button - The mouse button used to click.
+--- @return:
 local function Button_OnClick(frame, button)
     frame.obj:Fire("OnClick", button)
     AceGUI:ClearFocus()
 end
 
---[[-----------------------------------------------------------------------------
-Methods
--------------------------------------------------------------------------------]]
+-- Methods
 local methods = {
+    --- Description: Called when the widget is acquired.
+    --- @param:
+    --- @return:
     ["OnAcquire"] = function(self)
         self:SetHeight(24)
         self:SetWidth(24)
@@ -31,27 +48,48 @@ local methods = {
         self:SetDisabled(false)
     end,
 
+    --- Description: Called when the widget is released.
+    --- @param:
+    --- @return:
     ["OnRelease"] = function(self)
         self.icon:Hide()
     end,
 
+    --- Description: Sets the image for the button.
+    --- @param: icon - The texture path for the icon.
+    --- @return:
     ["SetImage"] = function(self, icon)
         self.icon:SetTexture(icon)
         self.icon:Show()
     end,
 
+    --- Description: Sets the size of the image.
+    --- @param: width - The width of the image.
+    --- @param: height - The height of the image.
+    --- @return:
     ["SetImageSize"] = function(self, width, height)
         self.icon:SetSize(width, height)
     end,
 
+    --- Description: Sets the tooltip text for the button.
+    --- @param: tooltipText - The text to display in the tooltip.
+    --- @return:
     ["SetTooltip"] = function(self, tooltipText)
         self.tooltipText = tooltipText
     end,
 
+    --- Description: Sets the size of the button.
+    --- @param: width - The width of the button.
+    --- @param: height - The height of the button.
+    --- @return:
     ["SetSize"] = function(self, width, height)
         self.frame:SetSize(width, height)
     end,
 
+    --- Description: Sets a callback for a specific event.
+    --- @param: event - The event to set the callback for.
+    --- @param: callback - The function to call when the event occurs.
+    --- @return:
     ["SetCallback"] = function(self, event, callback)
         if event == "OnClick" then
             self.frame:SetScript("OnMouseUp", callback)
@@ -60,6 +98,9 @@ local methods = {
         end
     end,
 
+    --- Description: Sets the disabled state of the button.
+    --- @param: disabled - Whether the button should be disabled.
+    --- @return:
     ["SetDisabled"] = function(self, disabled)
         self.disabled = disabled
         if disabled then
@@ -71,18 +112,25 @@ local methods = {
         end
     end,
 
+    --- Description: Hides the button.
+    --- @param:
+    --- @return:
     ["Hide"] = function(self)
         self.frame:Hide()
     end,
 
+    --- Description: Shows the button.
+    --- @param:
+    --- @return:
     ["Show"] = function(self)
         self.frame:Show()
     end
 }
 
---[[-----------------------------------------------------------------------------
-Constructor
--------------------------------------------------------------------------------]]
+-- Constructor
+--- Description: Creates a new instance of the IconButton-MPA widget.
+--- @param:
+--- @return: The created widget.
 local function Constructor()
     local frame = CreateFrame("Button", nil, UIParent)
     frame:Hide()

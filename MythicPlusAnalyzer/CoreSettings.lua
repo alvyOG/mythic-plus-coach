@@ -1,11 +1,19 @@
--- Core Settings Window for Mythic Plus Analyzer
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: CoreSettings.lua
+-- Description: Core settings functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
 local AceGUI = LibStub("AceGUI-3.0")
 
 CoreSettings = {}
 CoreSettings.settingsWindow = nil
 CoreSettings.trackingTabsOrder = {}
 
--- Show the Settings Window
+--- Description: Show the Settings Window
+--- @param:
+--- @return:
 function CoreSettings:Show()
     if not self.settingsWindow then
         self:CreateSettingsWindow()
@@ -13,14 +21,18 @@ function CoreSettings:Show()
     self.settingsWindow:Show()
 end
 
--- Hide the Settings Window
+--- Description: Hide the Settings Window
+--- @param:
+--- @return:
 function CoreSettings:Hide()
     if self.settingsWindow then
         self.settingsWindow:Hide()
     end
 end
 
--- Create the Settings Window
+--- Description: Create the Settings Window
+--- @param:
+--- @return:
 function CoreSettings:CreateSettingsWindow()
     self.settingsWindow = AceGUI:Create("Window-MPA")
     self.settingsWindow:SetLayout("Flow")
@@ -48,7 +60,7 @@ function CoreSettings:CreateSettingsWindow()
 
     -- Handle tab selection
     settingsTabs:SetCallback("OnGroupSelected", function(container, event, group)
-        tabContainer:ReleaseChildren() -- Clear previous tab content
+        tabContainer:ReleaseChildren()
         if group == "General" then
             CoreSettings:CreateGeneralTab(tabContainer)
         elseif group == "Tracking" then
@@ -64,7 +76,9 @@ function CoreSettings:CreateSettingsWindow()
     settingsTabs:SelectTab("General")
 end
 
--- Create the General Tab
+--- Description: Create the General Tab
+--- @param: container - The container to add the tab content to.
+--- @return:
 function CoreSettings:CreateGeneralTab(container)
     local label = AceGUI:Create("Label")
     label:SetText("General Settings go here.")
@@ -72,7 +86,9 @@ function CoreSettings:CreateGeneralTab(container)
     container:AddChild(label)
 end
 
--- Create the Tracking Tab
+--- Description: Create the Tracking Tab
+--- @param: container - The container to add the tab content to.
+--- @return:
 function CoreSettings:CreateTrackingTab(container)
     local plugins = MythicPlusAnalyzer.plugins
     if #self.trackingTabsOrder == 0 then
@@ -144,6 +160,9 @@ function CoreSettings:CreateTrackingTab(container)
     end
 end
 
+--- Description: Reset Settings
+--- @param:
+--- @return:
 function CoreSettings:ResetSettings()
     CoreSettings:Hide()
     self.settingsWindow = nil
@@ -151,12 +170,10 @@ function CoreSettings:ResetSettings()
 end
 
 -- Register slash commands directly via MythicPlusAnalyzer
-MythicPlusAnalyzer:RegisterChatCommand("mpa settings", function()
+MythicPlusAnalyzer:RegisterChatCommand("mpa-settings", function()
     CoreSettings:Show()
 end)
 
-MythicPlusAnalyzer:RegisterChatCommand("mpa settings reset", function()
+MythicPlusAnalyzer:RegisterChatCommand("mpa-settings-reset", function()
     CoreSettings:ResetSettings()
 end)
-
-print("MPA-CoreSettings: Loaded successfully")

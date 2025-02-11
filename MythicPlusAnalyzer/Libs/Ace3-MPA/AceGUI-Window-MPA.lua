@@ -1,34 +1,66 @@
--- MPA Custom Window
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: AceGUI-Window-MPA.lua
+-- Description: Custom Window for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
 local AceGUI = LibStub("AceGUI-3.0")
 
+-- Constants
 local Type, Version = "Window-MPA", 3
 
+-- Methods
+--- Description: Hides the window.
+--- @param:
+--- @return:
 local function Hide(self)
     self.frame:Hide()
 end
 
+--- Description: Shows the window.
+--- @param:
+--- @return:
 local function Show(self)
     self.frame:Show()
 end
 
+--- Description: Called when the widget is acquired.
+--- @param:
+--- @return:
 local function OnAcquire(self)
     self:SetWidth(400)
     self:SetHeight(300)
     self.frame:Show()
 end
 
+--- Description: Called when the widget is released.
+--- @param:
+--- @return:
 local function OnRelease(self)
     self.frame:Hide()
 end
 
+--- Description: Sets the title of the window.
+--- @param: title - The title text.
+--- @return:
 local function SetTitle(self, title)
     self.titleLabel:SetText(title)
 end
 
+--- Description: Sets the font of the title.
+--- @param: font - The font path.
+--- @param: size - The font size.
+--- @param: flags - The font flags.
+--- @return:
 local function SetTitleFont(self, font, size, flags)
     self.titleLabel:SetFont(font, size, flags)
 end
 
+--- Description: Sets the alignment of the title.
+--- @param: align - The alignment ("LEFT", "CENTER", "RIGHT").
+--- @return:
 local function SetTitleAlignment(self, align)
     self.titleLabel:ClearAllPoints()
     if align == "LEFT" then
@@ -40,6 +72,9 @@ local function SetTitleAlignment(self, align)
     end
 end
 
+--- Description: Adds a button to the button bar.
+--- @param: button - The button to add.
+--- @return:
 local function AddButtonToBar(self, button)
     local numButtons = #self.buttonBar.buttons
     button.frame:SetParent(self.buttonBar)
@@ -48,6 +83,10 @@ local function AddButtonToBar(self, button)
     table.insert(self.buttonBar.buttons, button)
 end
 
+-- Constructor
+--- Description: Creates a new instance of the Window-MPA widget.
+--- @param:
+--- @return: The created widget.
 local function Constructor()
     local frame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
     frame:SetSize(400, 300)

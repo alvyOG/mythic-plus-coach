@@ -1,4 +1,11 @@
--- MPA Core
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: Core.lua
+-- Description: Core functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
 local AceAddon = LibStub("AceAddon-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
@@ -7,15 +14,19 @@ local AceConsole = LibStub("AceConsole-3.0")
 MythicPlusAnalyzer = AceAddon:NewAddon("MythicPlusAnalyzer", "AceEvent-3.0", "AceConsole-3.0")
 
 -- Event handlers
+--- Description: Initializes the addon, setting up initial values and printing a message.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:OnInitialize()
     self.plugins = self.plugins or {}
     self.testMode = false
     self.isTracking = false
-    print("MPA-Core: Initialized")
 end
 
+--- Description: Registers events when the addon is enabled.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:OnEnable()
-    -- Register events
     self:RegisterEvent("CHALLENGE_MODE_START")
     self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
     self:RegisterEvent("PLAYER_LEAVING_WORLD")
@@ -24,23 +35,34 @@ function MythicPlusAnalyzer:OnEnable()
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 
--- Event handlers
+--- Description: Handles the start of a Challenge Mode, resetting tracking metrics and enabling tracking.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:CHALLENGE_MODE_START()
     self:ResetTrackingMetrics()
     self.isTracking = true
     print("MPA-Core: Challenge Mode started! Tracking enabled.")
 end
 
+--- Description: Handles the completion of a Challenge Mode, disabling tracking.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:CHALLENGE_MODE_COMPLETED()
     self.isTracking = false
     print("MPA-Core: Challenge Mode completed! Tracking stopped.")
 end
 
+--- Description: Handles the player leaving the world, disabling tracking.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:PLAYER_LEAVING_WORLD()
     self.isTracking = false
     print("MPA-Core: Player left the world. Tracking stopped.")
 end
 
+--- Description: Handles the player entering combat, setting combat state and notifying plugins.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:PLAYER_REGEN_DISABLED()
     if not self.isTracking then return end
     CoreSegments:SetCombatState(true)
@@ -51,6 +73,9 @@ function MythicPlusAnalyzer:PLAYER_REGEN_DISABLED()
     end
 end
 
+--- Description: Handles the player leaving combat, setting combat state and notifying plugins.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:PLAYER_REGEN_ENABLED()
     if not CoreSegments:GetCombatState() then return end
     CoreSegments:SetCombatState(false)
@@ -61,6 +86,9 @@ function MythicPlusAnalyzer:PLAYER_REGEN_ENABLED()
     end
 end
 
+--- Description: Handles combat log events, notifying plugins.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:COMBAT_LOG_EVENT_UNFILTERED()
     if not self.isTracking then return end
     for _, plugin in pairs(self.plugins) do
@@ -71,16 +99,25 @@ function MythicPlusAnalyzer:COMBAT_LOG_EVENT_UNFILTERED()
 end
 
 -- Plugin Management
+--- Description: Registers a plugin with the Mythic Plus Analyzer.
+--- @param: plugin - The plugin to register.
+--- @return:
 function MythicPlusAnalyzer:RegisterPlugin(plugin)
     self.plugins = self.plugins or {}
     table.insert(self.plugins, plugin)
 end
 
+--- Description: Retrieves all registered plugins.
+--- @param:
+--- @return: A table of registered plugins.
 function MythicPlusAnalyzer:GetPlugins()
     self.plugins = self.plugins or {}
     return self.plugins
 end
 
+--- Description: Retrieves a specific plugin by name.
+--- @param: pluginName - The name of the plugin to retrieve.
+--- @return: The plugin if found, or nil if not found.
 function MythicPlusAnalyzer:GetPlugin(pluginName)
     for _, plugin in pairs(self.plugins) do
         if plugin.name == pluginName then return plugin end
@@ -90,6 +127,9 @@ function MythicPlusAnalyzer:GetPlugin(pluginName)
 end
 
 -- Utility Commands
+--- Description: Toggles the visibility of the Core Window.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:ToggleCoreWindow()
     if CoreWindow:IsShown() then
         CoreWindow:Hide()
@@ -98,6 +138,9 @@ function MythicPlusAnalyzer:ToggleCoreWindow()
     end
 end
 
+--- Description: Toggles the tracking state and resets tracking metrics if enabled.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:ToggleTrackingState()
     self.isTracking = not self.isTracking
     if self.isTracking then
@@ -108,6 +151,9 @@ function MythicPlusAnalyzer:ToggleTrackingState()
     end
 end
 
+--- Description: Resets tracking metrics for all plugins and core segments.
+--- @param:
+--- @return:
 function MythicPlusAnalyzer:ResetTrackingMetrics()
     CoreSegments:ResetCombatSegments()
     for _, plugin in pairs(self.plugins) do

@@ -1,16 +1,30 @@
--- MPA DamagePlugin
-local DamagePlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: DamagePlugin.lua
+-- Description: Damage tracking functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
+local AceGUI = LibStub("AceGUI-3.0")
+
+-- Create a frame for the plugin
+local DamagePlugin = CreateFrame("Frame")
 DamagePlugin.name = "DamagePlugin"
 DamagePlugin.events = {}
 DamagePlugin.damageSegments = {}  -- List to store combat slices with damage data
 
--- Reset tracking metrics
+--- Description: Reset tracking metrics.
+--- @param:
+--- @return:
 function DamagePlugin:ResetTrackingMetrics()
     self.damageSegments = {}  -- Reset the damage slices
     print("MPA-Damage: Damage tracking reset!")
 end
 
--- Track damage events
+--- Description: Track damage events.
+--- @param:
+--- @return:
 function DamagePlugin:OnCombatLogEvent()
     local _, subevent, _, sourceGUID, _, _, _, _, _ = CombatLogGetCurrentEventInfo()
     local spellID, spellName, amount
@@ -43,21 +57,27 @@ function DamagePlugin:OnCombatLogEvent()
     end
 end
 
--- Start a new damage slice when combat starts
+--- Description: Start a new damage slice when combat starts.
+--- @param:
+--- @return:
 function DamagePlugin:OnCombatStart()
     table.insert(self.damageSegments, {})
     print("MPA-Damage: Combat started!")
 end
 
--- Handle combat end, just print the associated message
+--- Description: Handle combat end, just print the associated message.
+--- @param:
+--- @return:
 function DamagePlugin:OnCombatEnd()
     print("MPA-Damage: Combat ended!")
 end
 
--- Print Damage Metrics
+--- Description: Print Damage Metrics.
+--- @param:
+--- @return:
 function DamagePlugin:PrintDamageMetrics()
     print("MPA-Damage: Damage Metrics Summary")
-    
+
     -- Calculate total damage and the total duration of all combat slices
     local totalDamage = 0
     for _, slice in ipairs(self.damageSegments) do
@@ -86,7 +106,7 @@ function DamagePlugin:PrintDamageMetrics()
         for spellID, damage in pairs(slice) do
             sliceDamage = sliceDamage + damage
         end
-        
+
         -- Calculate the slice DPS
         local sliceDPS = sliceDamage / sliceCombatTime
         print("MPA-Damage: Combat Slice " .. sliceIndex .. ":")
@@ -102,19 +122,28 @@ function DamagePlugin:PrintDamageMetrics()
     end
 end
 
--- Command to print damage metrics
-SLASH_DAMAGEPLUGINPRINT1 = "/mpadprint"
-SlashCmdList["DAMAGEPLUGINPRINT"] = function()
+--- Description: Command to print damage metrics.
+--- @param:
+--- @return:
+function DamagePlugin:PrintDamageMetricsCommand()
     DamagePlugin:PrintDamageMetrics()
 end
 
--- Command to reset damage metrics
-SLASH_DAMAGEPLUGINRESET1 = "/mpadreset"
-SlashCmdList["DAMAGEPLUGINRESET"] = function()
+--- Description: Command to reset damage metrics.
+--- @param:
+--- @return:
+function DamagePlugin:ResetDamageMetricsCommand()
     DamagePlugin:ResetTrackingMetrics()
 end
 
 -- Register the plugin with the Core module
 MythicPlusAnalyzer:RegisterPlugin(DamagePlugin)
 
-print("MPA-Damage: Damage Plugin loaded!")
+-- Register slash commands
+MythicPlusAnalyzer:RegisterChatCommand("mpa-damage-print", function()
+    DamagePlugin:PrintDamageMetricsCommand()
+end)
+
+MythicPlusAnalyzer:RegisterChatCommand("mpa-damage-reset", function()
+    DamagePlugin:ResetDamageMetricsCommand()
+end)

@@ -1,39 +1,57 @@
--- MPA ProgressPlugin
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: ProgressPlugin.lua
+-- Description: Progress tracking functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
+-- Load Libraries
 local AceGUI = LibStub("AceGUI-3.0")
 
-local ProgressPlugin = CreateFrame("Frame")  -- Create a frame for the plugin
+-- Create a frame for the plugin
+local ProgressPlugin = CreateFrame("Frame")
 ProgressPlugin.name = "ProgressPlugin"
 ProgressPlugin.events = {}
-ProgressPlugin.progressSegments = {}  -- List to store progress slices with progress data
+ProgressPlugin.progressSegments = {}
 ProgressPlugin.startTime = nil
 ProgressPlugin.progressTime = nil
 
--- Reset tracking metrics
+--- Description: Reset tracking metrics.
+--- @param:
+--- @return:
 function ProgressPlugin:ResetTrackingMetrics()
-    self.progressSegments = {}  -- Reset the progress slices
+    self.progressSegments = {}
     self.startTime = GetTime()
     self.progressTime = nil
     print("MPA-Progress: Progress tracking reset!")
 end
 
--- Getter for startTime
+--- Description: Getter for startTime.
+--- @param:
+--- @return: The start time.
 function ProgressPlugin:GetStartTime()
     return self.startTime or 0
 end
 
--- Getter for progressTime
+--- Description: Getter for progressTime.
+--- @param:
+--- @return: The progress time.
 function ProgressPlugin:GetProgressTime()
     return self.progressTime or 0
 end
 
--- Setter for progressTime
+--- Description: Setter for progressTime.
+--- @param: time - The new progress time.
+--- @return:
 function ProgressPlugin:SetProgressTime(time)
     if time >= 0 then
         self.progressTime = time
     end
 end
 
--- Formats progress time as a string
+--- Description: Formats progress time as a string.
+--- @param:
+--- @return: The formatted progress time string.
 function ProgressPlugin:FormatProgressMetrics()
     local pTime = self:GetProgressTime()
     local hours = math.floor(pTime / 3600)
@@ -43,7 +61,9 @@ function ProgressPlugin:FormatProgressMetrics()
     return string.format("|cffffffffProgress Time: %02d:%02d:%02d.%03d|r", hours, minutes, seconds, millis)
 end
 
--- Function to return the UI content for this plugin
+--- Description: Function to return the UI content for this plugin.
+--- @param:
+--- @return: The UI content container.
 function ProgressPlugin:GetContent()
     local container = AceGUI:Create("SimpleGroup")
     container:SetFullWidth(true)
@@ -69,19 +89,28 @@ function ProgressPlugin:GetContent()
     return container
 end
 
--- Command to print formatted progress time
-SLASH_PROGRESSPLUGINPRINT1 = "/mpapprint"
-SlashCmdList["PROGRESSPLUGINPRINT"] = function()
-    print("MPA-Progress: " .. ProgressPlugin:FormatProgressMetrics())
+--- Description: Command to print formatted progress time.
+--- @param:
+--- @return:
+function ProgressPlugin:PrintProgressTime()
+    print("MPA-Progress: " .. self:FormatProgressMetrics())
 end
 
--- Command to reset progress metrics
-SLASH_PROGRESSPLUGINRESET1 = "/mpapreset"
-SlashCmdList["PROGRESSPLUGINRESET"] = function()
-    ProgressPlugin:ResetTrackingMetrics()
+--- Description: Command to reset progress metrics.
+--- @param:
+--- @return:
+function ProgressPlugin:ResetProgressMetrics()
+    self:ResetTrackingMetrics()
 end
 
 -- Register the plugin with the Core module
 MythicPlusAnalyzer:RegisterPlugin(ProgressPlugin)
 
-print("MPA-Progress: Progress Plugin loaded!")
+-- Register slash commands
+MythicPlusAnalyzer:RegisterChatCommand("mpa-progress-print", function()
+    ProgressPlugin:PrintProgressTime()
+end)
+
+MythicPlusAnalyzer:RegisterChatCommand("mpa-progress-reset", function()
+    ProgressPlugin:ResetProgressMetrics()
+end)

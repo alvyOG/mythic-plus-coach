@@ -1,10 +1,16 @@
--- Mythic Plus Analyzer Core Window (With Custom AceGUI Window Override)
+-- Mythic Plus Analyzer Addon
+-- Author: alvy023
+-- File: CoreWindow.lua
+-- Description: Core window functionality for the Mythic Plus Analyzer addon.
+-- License:
+-- For more information, visit the project repository.
+
 local AceGUI = LibStub("AceGUI-3.0")
 
 -- Create Core Window
 CoreWindow = AceGUI:Create("Window-MPA")
 CoreWindow:SetLayout("List")
-CoreWindow:Hide()  -- Start hidden
+CoreWindow:Hide()
 CoreWindow.trackButton = nil
 
 -- Set Core Window Title
@@ -12,7 +18,9 @@ CoreWindow:SetTitle("|cffffcc00M+ Analyzer|r")
 CoreWindow:SetTitleFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
 CoreWindow:SetTitleAlignment("LEFT")
 
--- Function to update tabs
+--- Description: Function to update tabs.
+--- @param: tabOrder - The order of the tabs to update.
+--- @return:
 function CoreWindow:UpdateTabs(tabOrder)
     -- TODO: Implement this function
     print("MPA-Core Window: UpdateTabs() called")
@@ -22,27 +30,27 @@ end
 local settingsButton = AceGUI:Create("IconButton-MPA")
 settingsButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Gear.tga")
 settingsButton:SetTooltip("Settings")
-settingsButton:SetSize(18, 18)  -- Use SetSize instead of SetWidth
+settingsButton:SetSize(18, 18)
 settingsButton:SetCallback("OnClick", function()
     CoreSettings:Show()
 end)
-CoreWindow:AddButton(settingsButton)  -- Add to button bar
+CoreWindow:AddButton(settingsButton)
 
 -- Reset Button (Undo Arrow ♻️)
 local resetButton = AceGUI:Create("IconButton-MPA")
 resetButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Reset.tga")
 resetButton:SetTooltip("Reset")
-resetButton:SetSize(18, 18)  -- Use SetSize instead of SetWidth
+resetButton:SetSize(18, 18)
 resetButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ResetTrackingMetrics()
 end)
-CoreWindow:AddButton(resetButton)  -- Add to button bar
+CoreWindow:AddButton(resetButton)
 
 -- Start/Stop Button (Play ▶️ / Stop ⏹️)
 CoreWindow.trackButton = AceGUI:Create("IconButton-MPA")
 CoreWindow.trackButton:SetImage("Interface\\AddOns\\MythicPlusAnalyzer\\Assets\\CustomIcon-White-Play.tga")
 CoreWindow.trackButton:SetTooltip("Start")
-CoreWindow.trackButton:SetSize(16, 16)  -- Use SetSize instead of SetWidth
+CoreWindow.trackButton:SetSize(16, 16)
 CoreWindow.trackButton:SetCallback("OnClick", function()
     MythicPlusAnalyzer:ToggleTrackingState()
     if MythicPlusAnalyzer.isTracking then
@@ -53,7 +61,7 @@ CoreWindow.trackButton:SetCallback("OnClick", function()
         CoreWindow.trackButton:SetTooltip("Start")
     end
 end)
-CoreWindow:AddButton(CoreWindow.trackButton)  -- Add to button bar
+CoreWindow:AddButton(CoreWindow.trackButton)
 
 -- Create a container for tab content
 local tabContainer = AceGUI:Create("SimpleGroup")
@@ -76,9 +84,12 @@ for _, plugin in pairs(MythicPlusAnalyzer.plugins) do
 end
 coreTabs:SetTabs(tabList)
 
--- Handle tab selection and load plugin content
+--- Description: Handle tab selection and load plugin content.
+--- @param: \_ - Unused parameter.
+--- @param: \_ - Unused parameter.
+--- @param: tabName - The name of the tab to select.
 coreTabs:SetCallback("OnGroupSelected", function(_, _, tabName)
-    tabContainer:ReleaseChildren() -- Clear previous content
+    tabContainer:ReleaseChildren()
     local plugin = MythicPlusAnalyzer:GetPlugin(tabName)
     if plugin and plugin.GetContent then
         tabContainer:AddChild(plugin:GetContent())
@@ -92,5 +103,3 @@ CoreWindow:AddChild(coreTabs)
 if #tabList > 0 then
     coreTabs:SelectTab(tabList[1].value)
 end
-
-print("MPA-Core Window: Loaded successfully")
