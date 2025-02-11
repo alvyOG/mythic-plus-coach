@@ -26,6 +26,12 @@ Mythic Plus Analyzer is a World of Warcraft addon designed to track and analyze 
 ## Project Structure
 ```
 MythicPlusAnalyzer/
+├── Assets/
+│   ├── CustomIcon-White-Gear.tga
+│   ├── CustomIcon-White-Play.tga
+│   ├── CustomIcon-White-Reset.tga
+│   ├── CustomIcon-White-Stop.tga
+│   └── CustomIcon-White-X.tga
 ├── Core.lua
 ├── CoreSegments.lua
 ├── CoreWindow.lua
