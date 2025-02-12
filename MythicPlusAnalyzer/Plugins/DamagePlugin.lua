@@ -14,6 +14,9 @@ DamagePlugin.name = "DamagePlugin"
 DamagePlugin.events = {}
 DamagePlugin.damageSegments = {}  -- List to store combat slices with damage data
 
+-- Register the plugin with the Core module
+MythicPlusAnalyzer:RegisterPlugin(DamagePlugin)
+
 --- Description: Reset tracking metrics.
 --- @param:
 --- @return:
@@ -135,9 +138,6 @@ end
 function DamagePlugin:ResetDamageMetricsCommand()
     DamagePlugin:ResetTrackingMetrics()
 end
-
--- Register the plugin with the Core module
-MythicPlusAnalyzer:RegisterPlugin(DamagePlugin)
 
 -- Register slash commands
 MythicPlusAnalyzer:RegisterChatCommand("mpa-damage-print", function()

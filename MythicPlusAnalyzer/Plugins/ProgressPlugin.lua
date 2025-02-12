@@ -16,6 +16,9 @@ ProgressPlugin.progressSegments = {}
 ProgressPlugin.startTime = nil
 ProgressPlugin.progressTime = nil
 
+-- Register the plugin with the Core module
+MythicPlusAnalyzer:RegisterPlugin(ProgressPlugin)
+
 --- Description: Reset tracking metrics.
 --- @param:
 --- @return:
@@ -102,9 +105,6 @@ end
 function ProgressPlugin:ResetProgressMetrics()
     self:ResetTrackingMetrics()
 end
-
--- Register the plugin with the Core module
-MythicPlusAnalyzer:RegisterPlugin(ProgressPlugin)
 
 -- Register slash commands
 MythicPlusAnalyzer:RegisterChatCommand("mpa-progress-print", function()

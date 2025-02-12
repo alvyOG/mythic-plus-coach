@@ -9,10 +9,13 @@
 local AceGUI = LibStub("AceGUI-3.0")
 
 -- Create a frame for the plugin
-local HealingPlugin = CreateFrame("Frame")
+HealingPlugin = CreateFrame("Frame")
 HealingPlugin.name = "HealingPlugin"
 HealingPlugin.events = {}
 HealingPlugin.healingSegments = {}  -- List to store combat slices with healing data
+
+-- Register the plugin with the Core module
+MythicPlusAnalyzer:RegisterPlugin(HealingPlugin)
 
 --- Description: Reset tracking metrics.
 --- @param:
@@ -136,9 +139,6 @@ function HealingPlugin:ResetHealingMetricsCommand()
     HealingPlugin:ResetTrackingMetrics()
 end
 
--- Register the plugin with the Core module
-MythicPlusAnalyzer:RegisterPlugin(HealingPlugin)
-
 -- Register slash commands
 MythicPlusAnalyzer:RegisterChatCommand("mpa-healing-print", function()
     HealingPlugin:PrintHealingMetricsCommand()
@@ -147,5 +147,3 @@ end)
 MythicPlusAnalyzer:RegisterChatCommand("mpa-healing-reset", function()
     HealingPlugin:ResetHealingMetricsCommand()
 end)
-
-print("MPA-Healing: Healing Plugin loaded!")
